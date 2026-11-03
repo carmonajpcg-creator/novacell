@@ -1,4 +1,4 @@
-﻿import {
+import {
   LayoutDashboard,
   Smartphone,
   Boxes,

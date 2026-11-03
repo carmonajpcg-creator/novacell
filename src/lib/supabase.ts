@@ -1,4 +1,4 @@
-﻿import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { readEnv } from './env'
 
 const env = readEnv()

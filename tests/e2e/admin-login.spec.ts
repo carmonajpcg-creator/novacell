@@ -1,4 +1,4 @@
-﻿import { expect, test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 // Requiere un proyecto de Supabase real y credenciales por entorno (nunca en el repo):
 //   E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD

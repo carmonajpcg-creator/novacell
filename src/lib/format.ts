@@ -1,4 +1,4 @@
-﻿const mxn = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' })
+const mxn = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' })
 
 /** Formatea un importe como MXN. Solo para mostrar: el cálculo financiero vive en el backend. */
 export function formatMXN(amount: number): string {

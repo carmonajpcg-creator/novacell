@@ -1,4 +1,4 @@
-﻿# Creación controlada del administrador
+# Creación controlada del administrador
 
 El registro público está deshabilitado (`enable_signup = false`). Para crear al administrador:
 

@@ -657,8 +657,8 @@ Espera mi aprobaciÃ³n antes de empezar.
 
 ## 24. Comandos y estado (actualizado en Fase 1)
 
-- `npm run dev` · `build` · `lint` · `typecheck` · `test` (Vitest) · `test:e2e` (Playwright)
-- Pruebas SQL/RLS: `npx supabase test db` (requiere Docker; también corren en CI).
+- `npm run dev` ï¿½ `build` ï¿½ `lint` ï¿½ `typecheck` ï¿½ `test` (Vitest) ï¿½ `test:e2e` (Playwright)
+- Pruebas SQL/RLS: `npx supabase test db` (requiere Docker; tambiï¿½n corren en CI).
 - Variables: copiar `.env.example` a `.env.local`. `VITE_BASE_PATH` define la base (Pages: `/<repo>/`).
-- Enrutado: `HashRouter` (ver `docs/DECISIONS.md`). Creación del admin: `docs/ADMIN_SETUP.md`.
-- Despliegue: solo manual vía workflow `deploy.yml` (`workflow_dispatch`).
+- Enrutado: `HashRouter` (ver `docs/DECISIONS.md`). Creaciï¿½n del admin: `docs/ADMIN_SETUP.md`.
+- Despliegue: solo manual vï¿½a workflow `deploy.yml` (`workflow_dispatch`).

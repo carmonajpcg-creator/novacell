@@ -1,4 +1,4 @@
-﻿# Decisiones técnicas
+# Decisiones técnicas
 
 ## 2026-11-02 — Fase 1
 
@@ -27,3 +27,22 @@
   Las políticas RLS se verificaron manualmente contra el proyecto real (visitante, empleado y admin).
 - Las pruebas E2E de login con Supabase real se activan con `E2E_ADMIN_EMAIL` y `E2E_ADMIN_PASSWORD`; sin ellas se omiten.
 - Pendiente: URL de redirección de Auth para GitHub Pages cuando exista el sitio publicado.
+
+## Fase 2 — Productos e inventario (2026-11-03)
+
+| # | Decisión | Motivo |
+|---|----------|--------|
+| 1 | Cada iPhone es una unidad identificada por IMEI único (15 dígitos + Luhn, validado en BD y UI) | Pedido del propietario. Número de serie opcional y único. |
+| 2 | Un iPhone es un producto "modelo"; capacidad, color, condición, batería y precios viven en la unidad | Precio y costo varían por equipo (seminuevos). |
+| 3 | Accesorios: producto + variantes (SKU, color, modelo compatible, precio, costo, existencias) | Pedido del propietario. |
+| 4 | `stock_quantity` y `status` no son escribibles por el cliente (privilegios por columna); solo RPC `register_unit`, `set_unit_active`, `adjust_variant_stock` | Evita stock negativo y cambios sin historial. Las RPC bloquean la fila (`FOR UPDATE`). |
+| 5 | Idempotencia con `idempotency_key` único en `inventory_movements`; el formulario genera la clave al abrirse | Doble clic o reintento no duplica. |
+| 6 | `inventory_movements` solo inserción (sin privilegios + trigger) | Historial inalterable. |
+| 7 | Todo el inventario es solo-admin hasta la Fase 6 | IMEI y costos nunca deben ser públicos; la tienda usará vistas sin esos campos. |
+| 8 | Productos y categorías se desactivan; solo se pueden borrar si están vacíos (FK `RESTRICT`) | Conserva el historial. |
+| 9 | Bucket `product-images` público para lectura, escritura solo admin, JPG/PNG/WebP ≤ 5 MB, rutas con UUID | Las fotos se mostrarán en la tienda. Las URL son difíciles de adivinar pero no secretas. |
+| 10 | Dinero como `string` en formularios, enviado como texto a `NUMERIC(14,2)` | Nunca floats (CLAUDE.md §15). |
+| 11 | Pruebas SQL como un bloque `DO` que revierte todo (`supabase/tests/*.test.sql` + `tests/integration/run-db-tests.mjs`) | `supabase db query` solo ejecuta una sentencia y no hay Docker/pgTAP. Corren igual contra el proyecto real, sin dejar datos. |
+
+Pendientes de negocio (CLAUDE.md §21): ninguno nuevo introducido. No se definió política de garantías, ni catálogo ni precios reales.
+No cubierto aún: prueba de concurrencia real (varias conexiones simultáneas); las RPC usan `FOR UPDATE` pero solo se probaron secuencialmente.

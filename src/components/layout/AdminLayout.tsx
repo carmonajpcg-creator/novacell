@@ -1,4 +1,4 @@
-﻿import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet } from 'react-router-dom'
 import { LogOut } from 'lucide-react'
 import { Wordmark } from '@/components/shared/Wordmark'
 import { Button } from '@/components/ui/button'

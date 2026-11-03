@@ -1,4 +1,4 @@
-﻿import { Link, Outlet } from 'react-router-dom'
+import { Link, Outlet } from 'react-router-dom'
 import { Wordmark } from '@/components/shared/Wordmark'
 
 export function PublicLayout() {

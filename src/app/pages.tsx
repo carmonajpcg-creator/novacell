@@ -1,4 +1,4 @@
-﻿import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { EmptyState } from '@/components/shared/states'
 import { Button } from '@/components/ui/button'
 import { adminNav } from '@/components/layout/adminNav'

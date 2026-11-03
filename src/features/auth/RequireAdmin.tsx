@@ -1,4 +1,4 @@
-﻿import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { LoadingState, ErrorState } from '@/components/shared/states'
 import { useAuth } from './AuthContext'
 

@@ -1,4 +1,4 @@
-﻿import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 /** Logotipo provisional de texto, hasta contar con el logotipo definitivo. */
 export function Wordmark({ className }: { className?: string }) {

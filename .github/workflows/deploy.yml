@@ -1,4 +1,4 @@
-﻿# Despliegue MANUAL a GitHub Pages (CLAUDE.md §15/§18: no desplegar sin autorización).
+# Despliegue MANUAL a GitHub Pages (CLAUDE.md §15/§18: no desplegar sin autorización).
 name: Deploy to GitHub Pages
 on:
   workflow_dispatch:

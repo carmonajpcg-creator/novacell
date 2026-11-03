@@ -1,4 +1,4 @@
-﻿-- Fase 1: fundamentos. Perfiles, configuración del negocio y auditoría.
+-- Fase 1: fundamentos. Perfiles, configuración del negocio y auditoría.
 -- RLS activa y acceso denegado por defecto.
 
 create extension if not exists pgcrypto;

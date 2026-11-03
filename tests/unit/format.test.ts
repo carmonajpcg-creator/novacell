@@ -1,4 +1,4 @@
-﻿import { formatMXN } from '@/lib/format'
+import { formatMXN } from '@/lib/format'
 import { readEnv } from '@/lib/env'
 
 describe('formatMXN', () => {
