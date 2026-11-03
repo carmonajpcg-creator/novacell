@@ -57,7 +57,7 @@ begin
     jsonb_build_array(jsonb_build_object('unit_id', unit_a, 'unit_price', '10000.00'),
                       jsonb_build_object('variant_id', var_id, 'quantity', 2)),
     'nota', 'key-sale-0001');
-  select count(*) into n from public.sales;
+  select count(*) into n from public.sales where customer_id = cust;
   c := (s1b = s1 and n = 1 and (select stock_quantity from public.product_variants where id = var_id) = 3);
   report := report || case when c then 'ok   ' else 'FAIL ' end || 'reintento con la misma clave no duplica la venta ni el descuento' || E'\n'; fails := fails + (not c)::int;
 
@@ -71,7 +71,7 @@ begin
   report := report || case when c then 'ok   ' else 'FAIL ' end || 'existencias insuficientes rechazan la venta' || E'\n'; fails := fails + (not c)::int;
   c := ((select status from public.product_units where id = unit_b) = 'available'
         and (select stock_quantity from public.product_variants where id = var_id) = 3
-        and (select count(*) from public.sales) = 1);
+        and (select count(*) from public.sales where customer_id = cust) = 1);
   report := report || case when c then 'ok   ' else 'FAIL ' end || 'una venta rechazada no deja reservas parciales (atomica)' || E'\n'; fails := fails + (not c)::int;
 
   begin perform public.create_sale(cust, 'in_person', jsonb_build_array(jsonb_build_object('unit_id', unit_b), jsonb_build_object('unit_id', unit_b)), null, 'key-sale-0004'); c := false;

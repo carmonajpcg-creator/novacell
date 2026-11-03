@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Table, Td, Th } from '@/components/ui/table'
+import { CreditStatusBadge } from '@/features/credits/components/CreditStatusBadge'
+import { useCustomerCredits } from '@/features/credits/hooks'
 import { SaleStatusBadge } from '@/features/sales/components/SaleStatusBadge'
 import { useCustomerSales } from '@/features/sales/hooks'
 import { client, useInvalidatingMutation } from '@/hooks/data'
@@ -22,6 +24,7 @@ export function CustomerDetailPage() {
   const navigate = useNavigate()
   const customer = useCustomer(id)
   const sales = useCustomerSales(id)
+  const credits = useCustomerCredits(id)
   const [editing, setEditing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -137,6 +140,40 @@ export function CustomerDetailPage() {
           </Table>
         )}
       </section>
+
+      {(credits.data ?? []).length > 0 && (
+        <section className="space-y-3" aria-label="Créditos">
+          <h2 className="text-lg font-semibold">Créditos</h2>
+          <Table>
+            <thead>
+              <tr>
+                <Th>Folio</Th>
+                <Th className="text-right">Financiado</Th>
+                <Th className="text-right">Saldo</Th>
+                <Th className="text-right">Vencido</Th>
+                <Th>Estado</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {(credits.data ?? []).map((cr) => (
+                <tr key={cr.id}>
+                  <Td className="font-mono text-xs">
+                    <Link className="text-brand hover:underline" to={`/admin/creditos/${cr.id}`}>
+                      {cr.credit_number}
+                    </Link>
+                  </Td>
+                  <Td className="text-right">{formatMXN(cr.financed_total)}</Td>
+                  <Td className="text-right">{formatMXN(cr.balance)}</Td>
+                  <Td className="text-right">{cr.overdue_count > 0 ? formatMXN(cr.overdue_amount) : '—'}</Td>
+                  <Td>
+                    <CreditStatusBadge status={cr.status} />
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </section>
+      )}
 
       <CustomerFormDialog open={editing} onOpenChange={setEditing} customer={c} />
     </div>

@@ -74,3 +74,25 @@ No se implementó (documentado): movimientos de inventario para reservas de iPho
 `tests/integration/concurrency.mjs` lanza conexiones simultáneas y hace COMMIT (con prefijo `CC `, luego limpia):
 misma unidad vendida por 6 clientes → 1 gana; stock 3 con 8 ventas → 3 ganan y nunca negativo; misma clave de idempotencia ×4 → 1 venta;
 5 pagos simultáneos que excederían el total → solo caben 2; misma referencia de transferencia → 1; confirmar vs. cancelar → estado consistente.
+
+## Fase 4 — Créditos (2026-11-03)
+
+Reglas comerciales **propuestas y pendientes de aprobación**: C1 a C12 en [PENDING_RULES.md](PENDING_RULES.md).
+
+| # | Decisión | Motivo |
+|---|----------|--------|
+| 1 | Separación estricta: `credits` (acuerdo, inmutable) / `installments` (calendario, inmutable) / `payments` (pagos recibidos, con `kind`) / `payment_allocations` (aplicación) | CLAUDE.md §15. Sin privilegios de escritura sobre las tres primeras; solo RPC. |
+| 2 | El saldo nunca se guarda: se calcula en vistas (`credit_summaries`, `installment_status`) desde pagos confirmados y aplicaciones vigentes | Evita desalinearse; los pagos pendientes jamás bajan el saldo (§10). |
+| 3 | Un reverso marca `reversed_at` en las aplicaciones y deja el pago en `reversed`; nada se borra | "Nunca borrar pagos confirmados" (§10). |
+| 4 | Orden de bloqueo único: venta → crédito → pago → cuotas; y cada función que activa o liquida vuelve a bloquear la venta | Evita interbloqueos entre abonos, confirmaciones, reversos y cancelaciones. |
+| 5 | El tope de un abono cuenta pagos pendientes y confirmados (no solo lo aplicado) | Impide cobrar de más con transferencias pendientes. Verificado con 8 abonos simultáneos. |
+| 6 | La lógica de reservar inventario se extrajo a `reserve_sale_items` y la de confirmar a `finalize_sale`, compartidas por contado y crédito | Una sola implementación del inventario; las 89 pruebas previas siguieron pasando. |
+| 7 | La vista previa del calendario en el navegador usa el mismo algoritmo que la base (en centavos) y es solo informativa | El calendario definitivo lo genera `create_credit_sale`. Hay pruebas que fijan los mismos casos en ambos lados. |
+| 8 | `formatDate` interpreta fechas sin hora como día calendario local | `new Date('2026-11-10')` es medianoche UTC y mostraría el día anterior en México. |
+| 9 | Pruebas SQL herméticas (acotadas a los datos de cada prueba) | Fallaban si quedaban datos E2E sobrantes en la base. |
+
+## Revisión adversarial con Opus (Fase 4)
+Sin defectos críticos. Se corrigieron (migración `…0007`): reglas de reparto activadas sin documentar (A1), saldo demasiado pequeño para el número de cuotas (M1),
+saldo y próximo vencimiento mostrados en créditos cancelados (M2), precios con más de 2 decimales redondeados en silencio (B1), huella de idempotencia inestable (B2),
+reutilización de clave entre pago de contado y abono (B3), fecha absurda (B4), coherencia de estados y tipo de pago vs modalidad (B5), orden de bloqueo en la activación (B6) e idempotencia sin `reference` (B7).
+Decisiones de negocio que quedaron documentadas, sin cambiar el comportamiento: huecos tras un reverso (C11), calendario fijado al crear (C6), total de la venta distinto a la suma de líneas (C1).

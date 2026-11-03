@@ -34,6 +34,7 @@ export interface SaleItem {
 export interface Payment {
   id: string
   sale_id: string
+  kind: 'sale' | 'down_payment' | 'installment'
   method: PaymentMethod
   amount: number
   status: PaymentStatus

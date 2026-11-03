@@ -11,6 +11,7 @@ import { describeDbError } from '@/lib/dbErrors'
 import { formatDate, formatMXN } from '@/lib/format'
 import { formatCents } from '@/lib/money'
 import * as api from './api'
+import { useCreditBySale } from '@/features/credits/hooks'
 import { PaymentDialog } from './components/PaymentDialog'
 import { ReasonDialog } from './components/ReasonDialog'
 import { PaymentStatusBadge, SaleStatusBadge } from './components/SaleStatusBadge'
@@ -26,6 +27,7 @@ export function SaleDetailPage() {
   const sale = useSale(id)
   const items = useSaleItems(id)
   const payments = usePayments(id)
+  const credit = useCreditBySale(id)
   const [showPayment, setShowPayment] = useState(false)
   const [reasoned, setReasoned] = useState<Reasoned>(null)
   const [error, setError] = useState<string | null>(null)
@@ -50,7 +52,8 @@ export function SaleDetailPage() {
   const remaining = cents(s.total) - cents(s.confirmed_paid) - cents(s.pending_paid)
   const revenue = (items.data ?? []).reduce((sum, i) => sum + cents(i.unit_price) * i.quantity, 0)
   const cost = (items.data ?? []).reduce((sum, i) => sum + cents(i.unit_cost) * i.quantity, 0)
-  const isPending = s.status === 'pending'
+  const isCredit = s.modality === 'credit'
+  const isPending = s.status === 'pending' && !isCredit
 
   async function onConfirm(p: Payment) {
     if (!window.confirm(`¿Verificaste en tu banco el depósito de ${formatMXN(p.amount)} (clave ${p.reference ?? '—'})?`)) return
@@ -74,7 +77,12 @@ export function SaleDetailPage() {
             <SaleStatusBadge status={s.status} />
           </div>
           <div className="flex flex-wrap gap-2">
-            {s.status === 'confirmed' && (
+            {isCredit && credit.data && (
+              <Button asChild>
+                <Link to={`/admin/creditos/${credit.data.id}`}>Ver crédito {credit.data.credit_number}</Link>
+              </Button>
+            )}
+            {s.status === 'confirmed' && !isCredit && (
               <Button asChild variant="secondary">
                 <Link to={`/admin/ventas/${s.id}/comprobante`}>
                   <Printer className="size-4" aria-hidden /> Comprobante
@@ -111,6 +119,11 @@ export function SaleDetailPage() {
         <Metric label="Por cobrar" value={formatCents(isPending ? remaining : 0)} />
       </div>
 
+      {isCredit && (
+        <p role="status" className="rounded-xl bg-muted p-3 text-sm">
+          Venta a crédito: el enganche, los abonos y el calendario se gestionan desde el crédito.
+        </p>
+      )}
       {s.status === 'cancelled' && (
         <p role="status" className="rounded-xl bg-muted p-3 text-sm">
           Venta cancelada{s.cancelled_at ? ` el ${formatDate(s.cancelled_at)}` : ''}: {s.cancel_reason}
