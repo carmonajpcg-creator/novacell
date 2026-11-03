@@ -16,5 +16,14 @@
 | 10 | Despliegue solo por `workflow_dispatch` | CLAUDE.md prohíbe desplegar sin autorización. |
 | 11 | Wordmark de texto provisional | No hay logotipo definitivo. |
 
+## Infraestructura (2026-11-02)
+- Proyecto Supabase `novacell` (ref `fwxetxedxutklgnfitzn`, us-east-1, plan free) en la organización del propietario.
+- Migración `20261102000001_foundations` aplicada. Registro público desactivado (`disable_signup`).
+- Administrador creado con el proceso de `ADMIN_SETUP.md` (usuario en Auth + fila en `profiles` con rol admin).
+- Los secretos viven solo en `.env.local` (ignorado por git).
+
 ## Limitaciones conocidas
 - Docker no está instalado en la máquina de desarrollo: las pruebas pgTAP (`supabase/tests`) se ejecutan en CI, no localmente.
+  Las políticas RLS se verificaron manualmente contra el proyecto real (visitante, empleado y admin).
+- Las pruebas E2E de login con Supabase real se activan con `E2E_ADMIN_EMAIL` y `E2E_ADMIN_PASSWORD`; sin ellas se omiten.
+- Pendiente: URL de redirección de Auth para GitHub Pages cuando exista el sitio publicado.
