@@ -96,3 +96,30 @@ Sin defectos críticos. Se corrigieron (migración `…0007`): reglas de reparto
 saldo y próximo vencimiento mostrados en créditos cancelados (M2), precios con más de 2 decimales redondeados en silencio (B1), huella de idempotencia inestable (B2),
 reutilización de clave entre pago de contado y abono (B3), fecha absurda (B4), coherencia de estados y tipo de pago vs modalidad (B5), orden de bloqueo en la activación (B6) e idempotencia sin `reference` (B7).
 Decisiones de negocio que quedaron documentadas, sin cambiar el comportamiento: huecos tras un reverso (C11), calendario fijado al crear (C6), total de la venta distinto a la suma de líneas (C1).
+
+## Fase 5 — Apartados y cobranza (2026-11-03)
+
+Reglas comerciales **propuestas y pendientes de aprobación**: L1 a L10 y B1 a B6 en [PENDING_RULES.md](PENDING_RULES.md).
+
+| # | Decisión | Motivo |
+|---|----------|--------|
+| 1 | Un apartado **es una venta pendiente** (modalidad `layaway`) más una fila en `layaways` (anticipo pactado, fecha límite, estado). Reutiliza `reserve_sale_items` y `finalize_sale`. | Una sola implementación del inventario y de la entrega; los pagos siguen en `payments` (`kind = 'layaway'`). |
+| 2 | El estado del apartado nunca se escribe a mano: `refresh_layaway_status` lo recalcula desde los pagos **confirmados** (pendiente de anticipo / vigente / liquidado). | Pagos que llegan, se rechazan o se revierten no pueden dejar un estado incoherente. |
+| 3 | Convertir en venta es una acción explícita (`convert_layaway`) y idempotente: unidades vendidas, venta confirmada, una sola salida de inventario. | CLAUDE.md §11: "convertir apartado liquidado en venta". |
+| 4 | **Una reserva vencida se marca pero no se libera sola.** | CLAUDE.md §11 lo prohíbe hasta aprobar reglas comerciales. |
+| 5 | Cancelar un apartado con pagos cobrados **o revertidos** está bloqueado (error `0A000`), y también mientras haya un pago pendiente de verificar. | §11: no inventar política de devolución o retención de anticipos. Sin el bloqueo de "revertidos", revertir y cancelar la evadiría. |
+| 6 | La cobranza **nunca** tiene un estado "enviado" o "entregado": solo *preparado*, *WhatsApp abierto (no confirma el envío)* y *contactado* (declarado por el administrador). Las marcas de tiempo las fija un trigger en el servidor; el estado solo avanza; un contacto registrado no se reescribe. | CLAUDE.md §12. Verificado también en pruebas de interfaz y E2E. |
+| 7 | El mensaje usa plantillas provisionales que **no mencionan recargos, penalizaciones ni consecuencias**; hay una prueba que lo exige. | No existe política aprobada. |
+| 8 | El enlace es `wa.me/52<10 dígitos>` abierto por una acción del usuario; sin teléfono válido solo se permite copiar el mensaje. | El envío es siempre manual. |
+| 9 | `business_settings` valida las claves con efecto comercial (`layaway_min_down_percent` entre 0 y 100, `credit_allowed_frequencies`) con un trigger. | Un ajuste erróneo no debe romper ni relajar reglas. |
+
+## Revisión adversarial con Opus (Fase 5)
+Sin defectos críticos ni altos. Se corrigieron (migración `…0010`): cancelar rechazaba en silencio una transferencia pendiente y liberaba el equipo (M1),
+el anticipo mínimo configurado no se validaba (M2), la cola no mostraba lo pendiente de verificar, se podían preparar recordatorios para apartados/créditos no vigentes,
+un contacto registrado se podía reescribir y la huella de idempotencia no incluía las notas (también en créditos). Además se cerró el hueco «revertir y luego cancelar».
+Decisiones de negocio que quedaron documentadas sin cambiar el comportamiento: un apartado vencido sigue aceptando pagos (L6) y los créditos que esperan enganche no figuran en la cobranza (B1).
+
+## Pruebas de la Fase 5
+SQL: 246 comprobaciones en total (50 de apartados, 33 de cobranza). Concurrencia real (`concurrency-layaways.mjs`): 5 apartados simultáneos de una unidad → 1; 6 pagos que excederían el total → 2;
+convertir 4 veces a la vez → una salida; pagar contra cancelar, confirmar contra rechazar y convertir contra revertir dejan estados consistentes.
+E2E contra Supabase real: apartados completo y cobranza (esta última necesita `E2E_DB_URL` para simular una cuota vencida, porque una cuota no puede crearse en el pasado).

@@ -211,6 +211,10 @@ begin
   cc := public.create_credit_sale(cust, 'facebook', jsonb_build_array(jsonb_build_object('unit_id', unit_b)),
     14000, 2000, 'weekly', 6, today + 7, null, 'key-credit-0004');
   perform public.record_credit_payment(cc, 'down_payment', 'transfer', 2000, 'CLAVE-ENG-1', 'key-cp-0015');
+  begin perform public.cancel_sale((select sale_id from public.credits where id = cc), 'Cliente desistio'); c := false;
+  exception when check_violation then c := true; end;
+  report := report || case when c then 'ok   ' else 'FAIL ' end || 'cancelar un credito con un pago pendiente exige confirmarlo o rechazarlo antes' || E'\n'; fails := fails + (not c)::int;
+  perform public.reject_payment((select id from public.payments where idempotency_key = 'key-cp-0015'), 'No llego el deposito');
   t := public.cancel_sale((select sale_id from public.credits where id = cc), 'Cliente desistio');
   c := (t = 'cancelled' and (select status from public.credits where id = cc) = 'cancelled'
         and (select status from public.product_units where id = unit_b) = 'available'

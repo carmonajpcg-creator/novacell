@@ -12,6 +12,7 @@ import { formatDate, formatMXN } from '@/lib/format'
 import { formatCents } from '@/lib/money'
 import * as api from './api'
 import { useCreditBySale } from '@/features/credits/hooks'
+import { useLayawayBySale } from '@/features/layaways/hooks'
 import { PaymentDialog } from './components/PaymentDialog'
 import { ReasonDialog } from './components/ReasonDialog'
 import { PaymentStatusBadge, SaleStatusBadge } from './components/SaleStatusBadge'
@@ -28,6 +29,7 @@ export function SaleDetailPage() {
   const items = useSaleItems(id)
   const payments = usePayments(id)
   const credit = useCreditBySale(id)
+  const layaway = useLayawayBySale(id)
   const [showPayment, setShowPayment] = useState(false)
   const [reasoned, setReasoned] = useState<Reasoned>(null)
   const [error, setError] = useState<string | null>(null)
@@ -53,7 +55,8 @@ export function SaleDetailPage() {
   const revenue = (items.data ?? []).reduce((sum, i) => sum + cents(i.unit_price) * i.quantity, 0)
   const cost = (items.data ?? []).reduce((sum, i) => sum + cents(i.unit_cost) * i.quantity, 0)
   const isCredit = s.modality === 'credit'
-  const isPending = s.status === 'pending' && !isCredit
+  const isLayaway = s.modality === 'layaway'
+  const isPending = s.status === 'pending' && !isCredit && !isLayaway
 
   async function onConfirm(p: Payment) {
     if (!window.confirm(`¿Verificaste en tu banco el depósito de ${formatMXN(p.amount)} (clave ${p.reference ?? '—'})?`)) return
@@ -80,6 +83,11 @@ export function SaleDetailPage() {
             {isCredit && credit.data && (
               <Button asChild>
                 <Link to={`/admin/creditos/${credit.data.id}`}>Ver crédito {credit.data.credit_number}</Link>
+              </Button>
+            )}
+            {isLayaway && layaway.data && (
+              <Button asChild variant="secondary">
+                <Link to={`/admin/apartados/${layaway.data.id}`}>Ver apartado {layaway.data.layaway_number}</Link>
               </Button>
             )}
             {s.status === 'confirmed' && !isCredit && (
@@ -122,6 +130,11 @@ export function SaleDetailPage() {
       {isCredit && (
         <p role="status" className="rounded-xl bg-muted p-3 text-sm">
           Venta a crédito: el enganche, los abonos y el calendario se gestionan desde el crédito.
+        </p>
+      )}
+      {isLayaway && (
+        <p role="status" className="rounded-xl bg-muted p-3 text-sm">
+          Venta por apartado: el anticipo, los abonos y la conversión en venta se gestionan desde el apartado.
         </p>
       )}
       {s.status === 'cancelled' && (

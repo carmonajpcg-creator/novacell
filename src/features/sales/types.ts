@@ -7,7 +7,7 @@ export interface SaleSummary {
   sale_number: string
   customer_id: string
   customer_name: string
-  modality: 'cash' | 'credit'
+  modality: 'cash' | 'credit' | 'layaway'
   status: SaleStatus
   source: 'facebook' | 'whatsapp' | 'in_person' | 'other'
   total: number

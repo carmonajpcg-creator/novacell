@@ -4,13 +4,15 @@ import { PublicLayout } from '@/components/layout/PublicLayout'
 import { adminNav } from '@/components/layout/adminNav'
 import { LoginPage, RequireAdmin } from '@/features/auth'
 import { CreditDetailPage, CreditsPage, CreditStatementPage, NewCreditPage, PaymentReceiptPage, PaymentsPage } from '@/features/credits'
+import { CollectionsPage } from '@/features/collections'
 import { CustomerDetailPage, CustomersPage } from '@/features/customers'
 import { InventoryPage, ProductDetailPage, ProductsPage } from '@/features/inventory'
+import { LayawayDetailPage, LayawaysPage, NewLayawayPage } from '@/features/layaways'
 import { NewSalePage, ReceiptPage, SaleDetailPage, SalesPage } from '@/features/sales'
 import { AdminSectionPage, HomePage, NotFoundPage } from './pages'
 
 /** Secciones ya implementadas; el resto muestra un marcador "en construcción". */
-const implemented = new Set(['/admin/productos', '/admin/inventario', '/admin/clientes', '/admin/ventas', '/admin/creditos', '/admin/abonos'])
+const implemented = new Set(['/admin/productos', '/admin/inventario', '/admin/clientes', '/admin/ventas', '/admin/creditos', '/admin/abonos', '/admin/apartados', '/admin/cobranza'])
 
 export function AppRoutes() {
   return (
@@ -36,6 +38,10 @@ export function AppRoutes() {
           <Route path="creditos/:id/estado-de-cuenta" element={<CreditStatementPage />} />
           <Route path="creditos/:id/pago/:paymentId" element={<PaymentReceiptPage />} />
           <Route path="abonos" element={<PaymentsPage />} />
+          <Route path="apartados" element={<LayawaysPage />} />
+          <Route path="apartados/nuevo" element={<NewLayawayPage />} />
+          <Route path="apartados/:id" element={<LayawayDetailPage />} />
+          <Route path="cobranza" element={<CollectionsPage />} />
           {adminNav
             .filter(({ to }) => !implemented.has(to))
             .map(({ to, end }) => (

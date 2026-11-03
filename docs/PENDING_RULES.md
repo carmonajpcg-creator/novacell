@@ -39,3 +39,28 @@ Cada una indica dónde está implementada para poder ajustarla.
 | C10 | El crédito se **liquida solo** al cubrir todas las cuotas. Sin descuento por pago anticipado. | `allocate_payment` | Pendiente |
 | C11 | Un abono confirmado se puede **revertir** (se conserva el registro y sus aplicaciones; reabre un crédito liquidado). No se vuelven a repartir los abonos posteriores, por lo que puede quedar un hueco en una cuota anterior. **Bloqueado a propósito:** revertir el enganche de un crédito activo y cancelar o recuperar un crédito activo. | `reverse_payment`, `cancel_sale` | Pendiente (política de devoluciones y recuperación) |
 | C12 | Comprobantes de crédito (estado de cuenta y recibo de abono) **provisionales**, sin requisitos contractuales ni fiscales. | Interfaz | Pendiente |
+## Fase 5 — Apartados (propuestas L1 a L10, pendientes de aprobación)
+
+| # | Regla propuesta | Dónde vive | Estado |
+|---|-----------------|------------|--------|
+| L1 | Un apartado es una venta **pendiente** (modalidad `layaway`) con anticipo pactado y fecha límite. **Reserva el inventario desde que se crea** (iPhone reservado; accesorios descontados). | `create_layaway` | Pendiente |
+| L2 | El anticipo debe ser mayor a cero. Un **porcentaje mínimo** es configurable con la clave `layaway_min_down_percent` de `business_settings` (sin valor definido solo se exige > 0; aún sin pantalla de configuración). | `create_layaway` | Pendiente (¿qué porcentaje mínimo?) |
+| L3 | La fecha límite se elige por apartado; límite técnico: entre hoy y un año. | `create_layaway` | Pendiente (plazo máximo comercial) |
+| L4 | El apartado pasa a *activo* cuando los pagos **confirmados** cubren el anticipo y a *liquidado* cuando cubren el total. No se puede pagar más que el saldo (los pendientes cuentan para el tope). | `refresh_layaway_status` | Pendiente |
+| L5 | Una transferencia pendiente de verificar **no cuenta** como cobrada ni activa el apartado. | `confirm_payment` | Pendiente |
+| L6 | Una reserva **vencida se marca como vencida, pero NO se libera sola**: sigue reservada hasta que el negocio decida (CLAUDE.md §11). Un apartado vencido **sigue aceptando pagos y puede convertirse en venta**. | vista `layaway_summaries` | Pendiente (regla de liberación de reservas vencidas y qué pasa con un apartado vencido) |
+| L7 | Convertir un apartado liquidado en venta es una **acción explícita** (la entrega): las unidades pasan a vendidas, la venta queda confirmada y se emite el comprobante de venta. | `convert_layaway` | Pendiente |
+| L8 | **Cancelar** un apartado sin pagos confirmados libera el inventario. Con pagos confirmados está **bloqueado**: la devolución o retención del anticipo no está definida (CLAUDE.md §11). Tampoco se puede cancelar si hay pagos **revertidos** (así «revertir y luego cancelar» no evade el bloqueo), ni mientras haya un pago **pendiente de verificar** (puede ser dinero ya recibido: hay que confirmarlo o rechazarlo antes). | `cancel_sale` | Pendiente (política de devolución/retención de anticipos; mientras tanto un apartado con cobros no se puede cancelar) |
+| L9 | Los pagos de un apartado se pueden revertir (conservando el registro) mientras no esté convertido ni cancelado; el estado se recalcula. | `reverse_payment` | Pendiente |
+| L10 | Precio y costo de las líneas se fijan al crear el apartado (precio histórico). | `reserve_sale_items` | Pendiente |
+
+## Fase 5 — Cobranza (propuestas B1 a B6, pendientes de aprobación)
+
+| # | Regla propuesta | Dónde vive | Estado |
+|---|-----------------|------------|--------|
+| B1 | La cola de cobranza reúne cuotas con saldo de créditos **activos** y apartados vigentes con saldo, y muestra lo **pendiente de verificar** para no reclamar un pago ya hecho. Los créditos que esperan enganche (`pending_down`) no aparecen aunque tengan cuotas vencidas (ver C6). «Próximos» es una ventana elegida en pantalla (7 días por defecto). | vista `collection_queue` | Pendiente |
+| B2 | **El envío es siempre manual.** El sistema prepara el mensaje y abre WhatsApp (`wa.me`, lada +52 y teléfono de 10 dígitos). | Interfaz | Pendiente |
+| B3 | Estados de un recordatorio: *preparado* → *WhatsApp abierto* → *contactado* (declarado por el administrador, con resultado). **No existe «enviado» ni «entregado»**: abrir WhatsApp no demuestra el envío (CLAUDE.md §12). | `collection_reminders` | Pendiente |
+| B4 | Las plantillas de mensaje son provisionales y **no mencionan recargos, penalizaciones ni consecuencias** (no hay política aprobada). | Interfaz | Pendiente (redacción) |
+| B5 | Sin mensajes automáticos ni programados. | — | Pendiente |
+| B6 | Un cliente sin teléfono permite copiar el mensaje pero no abrir WhatsApp. | Interfaz | Pendiente |
