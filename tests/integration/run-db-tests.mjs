@@ -22,14 +22,18 @@ for (const file of files) {
     { encoding: 'utf8', shell: true },
   )
   const out = `${res.stdout}\n${res.stderr}`
-  const match = out.match(/TESTS_DONE failures=(\d+)\s*(.*?)"/s)
+  // La CLI imprime el error como JSON (local) o texto plano (CI): se acepta cualquiera de los dos.
+  const match = out.match(/TESTS_DONE failures=(\d+)([\s\S]*)/)
   console.log(`\n== ${file}`)
   if (!match) {
     console.log(out.trim())
     failed++
     continue
   }
-  console.log(match[2].replace(/\\n/g, '\n').trim())
+  let report = match[2].replace(/\\n/g, '\n')
+  const cut = report.search(/Try rerunning|"\}\}|\{"target/)
+  if (cut >= 0) report = report.slice(0, cut)
+  console.log(report.replace(/"\s*$/, '').trim())
   if (Number(match[1]) > 0) failed++
 }
 
