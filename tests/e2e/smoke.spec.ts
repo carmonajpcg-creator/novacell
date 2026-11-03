@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test'
 
 test('la página principal carga', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'NovaCell' })).toBeVisible()
-  await expect(page.getByText('Tecnología que conecta contigo.').first()).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Tecnología que conecta contigo.' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'NovaCell, inicio' })).toBeVisible()
 })
 
 test('/admin sin sesión redirige al login', async ({ page }) => {

@@ -120,7 +120,7 @@ function UnitForm({ productId, unit, onDone }: { productId: string; unit?: Produ
           <Input id="battery_health" inputMode="numeric" aria-invalid={!!errors.battery_health} {...register('battery_health')} />
         </Field>
       </div>
-      <Field id="physical_grade" label="Estado físico" error={errors.physical_grade?.message} hint="Opcional">
+      <Field id="physical_grade" label="Estado físico" error={errors.physical_grade?.message} hint="Opcional. Se muestra al público en la tienda: redáctalo pensando en el cliente.">
         <Input id="physical_grade" {...register('physical_grade')} />
       </Field>
       <Field id="serial_number" label="Número de serie" error={errors.serial_number?.message} hint="Opcional">

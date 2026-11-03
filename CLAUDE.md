@@ -655,7 +655,7 @@ Preséntame el plan, las decisiones pendientes y los criterios de aceptación.
 
 Espera mi aprobación antes de empezar.
 
-## 24. Comandos y estado (actualizado en Fase 5)
+## 24. Comandos y estado (actualizado en Fase 6)
 
 - `npm run dev` · `build` · `lint` · `typecheck` · `test` (Vitest) · `test:e2e` (Playwright)
 - Pruebas SQL/RLS: `npm run test:db` con `SUPABASE_DB_URL` (bloques DO que revierten todo; corren contra cualquier Postgres, también en CI).
@@ -665,6 +665,9 @@ Espera mi aprobación antes de empezar.
 - Enrutado: `HashRouter` (ver `docs/DECISIONS.md`). Creación del admin: `docs/ADMIN_SETUP.md`.
 - Despliegue: solo manual vía workflow `deploy.yml` (`workflow_dispatch`).
 - Concurrencia real: `SUPABASE_DB_URL=<url> node tests/integration/concurrency.mjs` (ventas) `concurrency-credits.mjs` (créditos) y `concurrency-layaways.mjs` (apartados) (hace COMMIT de datos `CC ` y los limpia). Limpieza manual: `tests/integration/cleanup-test-data.sql`.
-- Reglas comerciales propuestas y aún no aprobadas por el negocio: `docs/PENDING_RULES.md` (revisar antes de la Fase 6).
+- Reglas comerciales propuestas y aún no aprobadas por el negocio: `docs/PENDING_RULES.md` (revisar antes de la Fase 7).
+- Tienda pública: el visitante solo lee las vistas `public_*` (columnas explícitas, nunca `select *`). Toda tabla, vista o función nueva debe recibir sus permisos de forma explícita; hay una prueba que falla si `anon` obtiene acceso a algo fuera de la lista permitida.
+- Fotos huérfanas en Storage: `node tests/integration/cleanup-storage.mjs` informa y `--apply` elimina (usa la sesión del admin, nunca service_role).
+- Pendiente en el panel de Supabase: fijar `max_rows` en 100–200 (no verificable desde el código).
 - Funciones nuevas: conceder `EXECUTE` solo a `authenticated` (los privilegios por defecto ya no se heredan) y exigir `assert_admin()`.
 - E2E de cobranza: además de las variables habituales requiere `E2E_DB_URL` (Postgres de desarrollo) para simular una cuota vencida.

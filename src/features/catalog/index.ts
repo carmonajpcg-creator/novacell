@@ -1,0 +1,6 @@
+export { CartProvider } from './CartContext'
+export { CartPage } from './CartPage'
+export { CatalogPage } from './CatalogPage'
+export { ContactPage } from './ContactPage'
+export { ProductPage } from './ProductPage'
+export { StoreHomePage } from './StoreHomePage'

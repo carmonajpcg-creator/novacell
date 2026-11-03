@@ -123,3 +123,30 @@ Decisiones de negocio que quedaron documentadas sin cambiar el comportamiento: u
 SQL: 246 comprobaciones en total (50 de apartados, 33 de cobranza). Concurrencia real (`concurrency-layaways.mjs`): 5 apartados simultáneos de una unidad → 1; 6 pagos que excederían el total → 2;
 convertir 4 veces a la vez → una salida; pagar contra cancelar, confirmar contra rechazar y convertir contra revertir dejan estados consistentes.
 E2E contra Supabase real: apartados completo y cobranza (esta última necesita `E2E_DB_URL` para simular una cuota vencida, porque una cuota no puede crearse en el pasado).
+
+## Fase 6 — Tienda pública (2026-11-03)
+
+Reglas comerciales **propuestas y pendientes de aprobación**: S1 a S9 en [PENDING_RULES.md](PENDING_RULES.md).
+
+| # | Decisión | Motivo |
+|---|----------|--------|
+| 1 | El visitante (`anon`) solo lee cinco **vistas** `public_*` y las filas públicas de `business_settings`. Las tablas privadas no se tocan. | Denegar por defecto (CLAUDE.md §17). Una vista con columnas explícitas no puede filtrar IMEI, costos ni notas ni con `select=*`. |
+| 2 | Cada unidad tiene un `public_code` aleatorio (6 hex) distinto del código interno secuencial. | El código interno (`NC-000123`) revelaría el tamaño del inventario. |
+| 3 | La disponibilidad de accesorios es un estado (disponible / pocas piezas ≤ 3 / agotado), nunca una cantidad. | No exponer existencias exactas. |
+| 4 | El cliente pide columnas explícitas (nunca `select *`). | Una columna futura en una vista no llega al navegador por accidente. |
+| 5 | El carrito vive solo en `localStorage`, se valida con zod al leerlo y se contrasta con el catálogo vigente al abrir el carrito (quita lo no disponible, actualiza precios). | Datos del navegador no son confiables; el catálogo cambia. Nada se envía al servidor. |
+| 6 | El pedido es un mensaje `wa.me/52…` abierto por una acción del visitante. No reserva, no descuenta, no registra. Una prueba E2E verifica que unidad y stock quedan intactos. | CLAUDE.md §6: abrir WhatsApp no confirma una venta. |
+| 7 | Los datos de contacto son `business_settings` públicos y editables en **Configuración**; un trigger acepta públicas solo cinco claves. Si faltan, la tienda lo dice y no inventa datos. | No inventar tarifas, zonas ni horarios (§21). |
+| 8 | Los privilegios por defecto de `postgres` ya no conceden nada a `anon` sobre tablas ni secuencias nuevas. Una prueba falla si `anon` obtiene acceso a cualquier otro objeto. | Cada migración debía acordarse de hacer `REVOKE`. Ahora olvidarlo es seguro. |
+| 9 | Borrar un producto o una foto elimina primero los archivos de Storage y no ignora errores; `tests/integration/cleanup-storage.mjs` detecta y limpia huérfanos. | Los archivos de un producto borrado seguirían públicos por URL. |
+
+## Revisión adversarial con Opus (Fase 6)
+Sin fugas críticas ni altas: `anon` solo puede leer las vistas públicas y `business_settings`; las RPC, secuencias y tablas privadas le están negadas. Se corrigieron (migración `…0012`):
+privilegios por defecto aún abiertos para objetos futuros (M1), claves arbitrarias podían hacerse públicas (M2, incluida una variante con otras mayúsculas), fotos huérfanas en Storage (M3),
+una foto ligada a la unidad de otro producto (B1), `is_valid_imei` ejecutable por `anon` (B2) y un índice para el catálogo (B3).
+Limitaciones conocidas: los valores por defecto de objetos creados por `supabase_admin` (herramienta interna de Supabase) no se pueden cambiar desde las migraciones; no los usa este proyecto.
+`max_rows` del servidor no se pudo verificar: conviene fijarlo en 100–200 en el panel de Supabase. Las URL de las fotos ya publicadas siguen sirviendo tras despublicar (decisión aceptada; se recomienda no subir fotos donde se vea el IMEI).
+
+## Pruebas de la Fase 6
+SQL: 294 comprobaciones en total (incluyen la lista permitida de objetos que `anon` puede tocar). Unitarias: 103. E2E con el visitante sin sesión: catálogo, filtros, ficha, carrito, pedido por WhatsApp,
+despublicar, contacto, y la comprobación de que **ninguna respuesta de la API** contiene IMEI, número de serie, costos, notas ni códigos internos; recorrido móvil sin desbordes; y la pantalla de Configuración.

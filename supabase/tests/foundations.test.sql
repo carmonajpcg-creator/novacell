@@ -14,7 +14,7 @@ begin
     (emp_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'emp@test.local');
   insert into public.profiles (id, role) values (admin_id, 'admin'), (emp_id, 'employee');
   insert into public.business_settings (key, value, is_public) values
-    ('t_whatsapp', '"x"', true), ('t_internal', '"y"', false);
+    ('business_name', '"x"', true), ('t_internal', '"y"', false);
 
   -- ===== Visitante anónimo =====
   set local role anon;
@@ -50,7 +50,7 @@ begin
   -- ===== Administrador =====
   set local role authenticated;
   perform set_config('request.jwt.claims', json_build_object('sub', admin_id, 'role', 'authenticated')::text, true);
-  select count(*) into n from public.business_settings where key like 't\_%';
+  select count(*) into n from public.business_settings where key in ('business_name', 't_internal');
   c := (n = 2);
   report := report || case when c then 'ok   ' else 'FAIL ' end || 'admin ve toda la configuracion' || E'\n'; fails := fails + (not c)::int;
   begin

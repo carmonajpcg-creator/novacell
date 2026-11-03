@@ -4,21 +4,28 @@ import { PublicLayout } from '@/components/layout/PublicLayout'
 import { adminNav } from '@/components/layout/adminNav'
 import { LoginPage, RequireAdmin } from '@/features/auth'
 import { CreditDetailPage, CreditsPage, CreditStatementPage, NewCreditPage, PaymentReceiptPage, PaymentsPage } from '@/features/credits'
+import { CartPage, CatalogPage, ContactPage, ProductPage, StoreHomePage } from '@/features/catalog'
 import { CollectionsPage } from '@/features/collections'
 import { CustomerDetailPage, CustomersPage } from '@/features/customers'
 import { InventoryPage, ProductDetailPage, ProductsPage } from '@/features/inventory'
 import { LayawayDetailPage, LayawaysPage, NewLayawayPage } from '@/features/layaways'
 import { NewSalePage, ReceiptPage, SaleDetailPage, SalesPage } from '@/features/sales'
-import { AdminSectionPage, HomePage, NotFoundPage } from './pages'
+import { SettingsPage } from '@/features/settings'
+import { AdminSectionPage, NotFoundPage } from './pages'
 
 /** Secciones ya implementadas; el resto muestra un marcador "en construcción". */
-const implemented = new Set(['/admin/productos', '/admin/inventario', '/admin/clientes', '/admin/ventas', '/admin/creditos', '/admin/abonos', '/admin/apartados', '/admin/cobranza'])
+const implemented = new Set(['/admin/productos', '/admin/inventario', '/admin/clientes', '/admin/ventas', '/admin/creditos', '/admin/abonos', '/admin/apartados', '/admin/cobranza', '/admin/configuracion'])
 
 export function AppRoutes() {
   return (
     <Routes>
       <Route element={<PublicLayout />}>
-        <Route index element={<HomePage />} />
+        <Route index element={<StoreHomePage />} />
+        <Route path="iphone" element={<CatalogPage kind="iphone" />} />
+        <Route path="accesorios" element={<CatalogPage kind="accessory" />} />
+        <Route path="producto/:slug" element={<ProductPage />} />
+        <Route path="carrito" element={<CartPage />} />
+        <Route path="contacto" element={<ContactPage />} />
       </Route>
       <Route path="/admin/login" element={<LoginPage />} />
       <Route path="/admin" element={<RequireAdmin />}>
@@ -42,6 +49,7 @@ export function AppRoutes() {
           <Route path="apartados/nuevo" element={<NewLayawayPage />} />
           <Route path="apartados/:id" element={<LayawayDetailPage />} />
           <Route path="cobranza" element={<CollectionsPage />} />
+          <Route path="configuracion" element={<SettingsPage />} />
           {adminNav
             .filter(({ to }) => !implemented.has(to))
             .map(({ to, end }) => (

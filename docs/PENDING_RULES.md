@@ -64,3 +64,17 @@ Cada una indica dónde está implementada para poder ajustarla.
 | B4 | Las plantillas de mensaje son provisionales y **no mencionan recargos, penalizaciones ni consecuencias** (no hay política aprobada). | Interfaz | Pendiente (redacción) |
 | B5 | Sin mensajes automáticos ni programados. | — | Pendiente |
 | B6 | Un cliente sin teléfono permite copiar el mensaje pero no abrir WhatsApp. | Interfaz | Pendiente |
+
+## Fase 6 — Tienda pública (propuestas S1 a S9, pendientes de aprobación)
+
+| # | Regla propuesta | Dónde vive | Estado |
+|---|-----------------|------------|--------|
+| S1 | Solo se publican productos **publicados y activos**, de categorías activas. De los iPhone solo las unidades **disponibles** (no reservadas, vendidas ni inactivas). | vistas `public_*` | Pendiente |
+| S2 | El precio mostrado es el **precio de venta de contado vigente**. Un producto con varias unidades o variantes muestra «desde» y el rango. No se muestran precios de crédito ni de apartado. | `public_products`, `public_units`, `public_variants` | Pendiente |
+| S3 | La disponibilidad de los accesorios es un **estado** (Disponible / Pocas piezas / Agotado), nunca una cantidad exacta. Umbral de «pocas piezas»: **3** o menos. | `public_variants` | Pendiente (¿qué umbral?) |
+| S4 | De un iPhone se muestran condición (nuevo/seminuevo), capacidad, color, salud de batería y estado físico. **Nunca** IMEI, número de serie, costo, notas ni código interno. El campo «estado físico» es público: debe redactarse pensando en el cliente. También son públicos el SKU de los accesorios y la fecha de alta del producto. Recomendación: no subir fotografías donde se vea el IMEI (caja o pantalla de Ajustes), porque las URL de las fotos son públicas y siguen sirviendo aunque se despublique el producto. | `public_units` | Pendiente (¿SKU y fecha de alta públicos?) |
+| S5 | Cada unidad tiene un **código público aleatorio** de 6 caracteres para identificarla en el pedido; es distinto del código interno secuencial. | `product_units.public_code` | Pendiente |
+| S6 | El pedido por WhatsApp es un **mensaje con productos, cantidades e importes**. No reserva el equipo, no descuenta inventario y no registra nada: los precios y la disponibilidad se confirman por WhatsApp (CLAUDE.md §6). Sin pagos electrónicos. | Interfaz | Pendiente |
+| S7 | Los datos de contacto, horario, dirección y entregas son **configurables** (Configuración) y públicos. Si faltan, la tienda lo indica. **No se inventan tarifas, zonas de cobertura ni tiempos de entrega.** | `business_settings` | Pendiente (datos reales del negocio) |
+| S8 | El carrito vive solo en el navegador del visitante; no se recopilan datos personales ni se guarda el pedido en el servidor. | Interfaz | Pendiente |
+| S9 | No se publican garantías, devoluciones, financiamiento ni apartados hasta que existan políticas aprobadas. | Interfaz | Pendiente |

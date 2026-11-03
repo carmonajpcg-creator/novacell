@@ -79,8 +79,29 @@ export const updateProduct = (c: SupabaseClient, id: string, v: Pick<ProductValu
       .single(),
   )
 
-export const deleteProduct = (c: SupabaseClient, id: string) =>
-  unwrap(c.from('products').delete().eq('id', id))
+/**
+ * Borra un producto vacío. Sus fotografías se eliminan primero de Storage: borrar la fila en cascada no borra los
+ * archivos, que seguirían siendo públicos por URL (hallazgo de la revisión de seguridad). Si el producto tiene
+ * unidades, variantes o historial, la clave foránea lo impide y las fotos NO se tocan.
+ */
+export async function deleteProduct(c: SupabaseClient, id: string) {
+  const [units, variants] = await Promise.all([
+    c.from('product_units').select('id', { count: 'exact', head: true }).eq('product_id', id),
+    c.from('product_variants').select('id', { count: 'exact', head: true }).eq('product_id', id),
+  ])
+  if (units.error) throw units.error
+  if (variants.error) throw variants.error
+  if ((units.count ?? 0) > 0 || (variants.count ?? 0) > 0) {
+    throw { code: '23503', message: 'El producto tiene unidades o variantes' }
+  }
+  const images = await unwrap<{ storage_path: string }[]>(c.from('product_images').select('storage_path').eq('product_id', id))
+  const paths = images.map((i) => i.storage_path)
+  if (paths.length > 0) {
+    const { error } = await c.storage.from(IMAGES_BUCKET).remove(paths)
+    if (error) throw error
+  }
+  return unwrap(c.from('products').delete().eq('id', id))
+}
 
 // ----- Variantes (accesorios) -----
 export const listVariants = (c: SupabaseClient, productId: string) =>
@@ -241,9 +262,11 @@ export async function uploadImage(c: SupabaseClient, productId: string, file: Fi
 }
 
 export async function deleteImage(c: SupabaseClient, image: ProductImage) {
+  // Primero el archivo: si falla, la fila sigue y se puede reintentar. Al revés quedaría un archivo público huérfano.
+  const { error: fileError } = await c.storage.from(IMAGES_BUCKET).remove([image.storage_path])
+  if (fileError) throw fileError
   const { error } = await c.from('product_images').delete().eq('id', image.id)
   if (error) throw error
-  await c.storage.from(IMAGES_BUCKET).remove([image.storage_path])
 }
 
 export async function setPrimaryImage(c: SupabaseClient, productId: string, imageId: string) {

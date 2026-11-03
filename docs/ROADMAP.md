@@ -7,7 +7,7 @@ Ver CLAUDE.md §20 para el detalle de cada fase.
 - [x] Fase 3 — Clientes y ventas de contado (reglas comerciales propuestas: docs/PENDING_RULES.md)
 - [x] Fase 4 — Créditos (reglas C1 a C12 pendientes de aprobación: docs/PENDING_RULES.md)
 - [x] Fase 5 — Apartados y cobranza (reglas L1-L10 y B1-B6 pendientes de aprobación: docs/PENDING_RULES.md)
-- [ ] Fase 6 — Tienda pública
+- [x] Fase 6 — Tienda pública (reglas S1-S9 pendientes de aprobación: docs/PENDING_RULES.md)
 - [ ] Fase 7 — Entregas y reportes
 - [ ] Fase 8 — Lanzamiento
 

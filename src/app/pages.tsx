@@ -3,16 +3,6 @@ import { EmptyState } from '@/components/shared/states'
 import { Button } from '@/components/ui/button'
 import { adminNav } from '@/components/layout/adminNav'
 
-export function HomePage() {
-  return (
-    <section className="space-y-4 py-12 text-center">
-      <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">NovaCell</h1>
-      <p className="text-lg text-subtle">Tecnología que conecta contigo.</p>
-      <p className="text-sm text-subtle">El catálogo estará disponible próximamente.</p>
-    </section>
-  )
-}
-
 export function AdminSectionPage() {
   const { pathname } = useLocation()
   const item = adminNav.find((n) => n.to === pathname)
