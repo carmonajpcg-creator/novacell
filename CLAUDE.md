@@ -655,10 +655,12 @@ Preséntame el plan, las decisiones pendientes y los criterios de aceptación.
 
 Espera mi aprobación antes de empezar.
 
-## 24. Comandos y estado (actualizado en Fase 1)
+## 24. Comandos y estado (actualizado en Fase 2)
 
-- `npm run dev` � `build` � `lint` � `typecheck` � `test` (Vitest) � `test:e2e` (Playwright)
-- Pruebas SQL/RLS: `npx supabase test db` (requiere Docker; tambi�n corren en CI).
+- `npm run dev` · `build` · `lint` · `typecheck` · `test` (Vitest) · `test:e2e` (Playwright)
+- Pruebas SQL/RLS: `npm run test:db` con `SUPABASE_DB_URL` (bloques DO que revierten todo; corren contra cualquier Postgres, también en CI).
+- Migraciones: `npx supabase db push --db-url <url> --yes` (sin Docker ni token, con la contraseña de BD de `.env.local`).
+- E2E con Supabase real: definir `E2E_ADMIN_EMAIL` y `E2E_ADMIN_PASSWORD` en el entorno; los datos de prueba llevan prefijo `E2E`.
 - Variables: copiar `.env.example` a `.env.local`. `VITE_BASE_PATH` define la base (Pages: `/<repo>/`).
-- Enrutado: `HashRouter` (ver `docs/DECISIONS.md`). Creaci�n del admin: `docs/ADMIN_SETUP.md`.
-- Despliegue: solo manual v�a workflow `deploy.yml` (`workflow_dispatch`).
+- Enrutado: `HashRouter` (ver `docs/DECISIONS.md`). Creación del admin: `docs/ADMIN_SETUP.md`.
+- Despliegue: solo manual vía workflow `deploy.yml` (`workflow_dispatch`).
