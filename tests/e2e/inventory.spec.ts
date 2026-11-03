@@ -24,7 +24,7 @@ test.describe('inventario (Supabase real)', () => {
   test('las pantallas de inventario no desbordan en móvil', async ({ page, isMobile }) => {
     test.skip(!isMobile, 'solo móvil')
     await login(page)
-    for (const path of ['productos', 'inventario']) {
+    for (const path of ['productos', 'inventario', 'clientes', 'ventas', 'ventas/nueva']) {
       await page.goto(`/#/admin/${path}`)
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
       const overflow = await page.evaluate(

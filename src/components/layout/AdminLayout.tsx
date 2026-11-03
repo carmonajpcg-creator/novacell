@@ -15,8 +15,8 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 export function AdminLayout() {
   const { email, signOut } = useAuth()
   return (
-    <div className="min-h-screen bg-muted md:flex">
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-gray-200 bg-surface p-4 md:flex">
+    <div className="min-h-screen bg-muted md:flex print:bg-white">
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-gray-200 bg-surface p-4 md:flex print:hidden">
         <Wordmark className="mb-6 px-3" />
         <nav aria-label="Principal" className="flex flex-1 flex-col gap-1">
           {adminNav.map(({ to, label, icon: Icon, end }) => (
@@ -29,7 +29,7 @@ export function AdminLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between gap-2 border-b border-gray-200 bg-surface px-4">
+        <header className="flex h-14 items-center justify-between gap-2 border-b border-gray-200 bg-surface px-4 print:hidden">
           <Wordmark className="md:hidden" />
           <span className="hidden text-sm text-subtle md:inline">{email}</span>
           <Button variant="ghost" size="sm" onClick={() => void signOut()}>
@@ -38,7 +38,7 @@ export function AdminLayout() {
         </header>
         <nav
           aria-label="Principal móvil"
-          className="flex gap-1 overflow-x-auto border-b border-gray-200 bg-surface p-2 md:hidden"
+          className="flex gap-1 overflow-x-auto border-b border-gray-200 bg-surface p-2 md:hidden print:hidden"
         >
           {adminNav.map(({ to, label, icon: Icon, end }) => (
             <NavLink key={to} to={to} end={end} className={linkClass}>
@@ -47,7 +47,7 @@ export function AdminLayout() {
             </NavLink>
           ))}
         </nav>
-        <main className="flex-1 p-4 md:p-8">
+        <main className="flex-1 p-4 md:p-8 print:p-0">
           <Outlet />
         </main>
       </div>

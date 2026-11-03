@@ -46,3 +46,31 @@
 
 Pendientes de negocio (CLAUDE.md §21): ninguno nuevo introducido. No se definió política de garantías, ni catálogo ni precios reales.
 No cubierto aún: prueba de concurrencia real (varias conexiones simultáneas); las RPC usan `FOR UPDATE` pero solo se probaron secuencialmente.
+
+## Fase 3 — Clientes y ventas de contado (2026-11-03)
+
+Reglas comerciales **propuestas y pendientes de aprobación**: ver [PENDING_RULES.md](PENDING_RULES.md).
+
+| # | Decisión | Motivo |
+|---|----------|--------|
+| 1 | Ventas, líneas y pagos solo se escriben mediante RPC (`create_sale`, `record_payment`, `confirm_payment`, `reject_payment`, `reverse_payment`, `cancel_sale`); el cliente solo lee | El total, el inventario y los estados los decide la base de datos, nunca el navegador (CLAUDE.md §3.10, §16). |
+| 2 | La venta se confirma automáticamente cuando los pagos confirmados suman el total (`complete_sale_if_paid`, interna) | No existe un "confirmar venta" manual que pueda desalinearse del dinero cobrado. |
+| 3 | Orden de bloqueo fijo: venta → pago, y unidades/variantes por UUID | Evita interbloqueos entre confirmar, cancelar y crear ventas. |
+| 4 | Idempotencia estricta: misma clave con datos distintos es error (huella `request_hash` en ventas; comparación de campos en pagos e inventario) | Un reintento idéntico es seguro; reutilizar una clave por error no devuelve la operación equivocada. |
+| 5 | `EXECUTE` revocado a `anon` en todas las RPC y a `anon`/`authenticated` en funciones internas; `ALTER DEFAULT PRIVILEGES` para funciones futuras | Supabase concede EXECUTE por defecto; `REVOKE ... FROM PUBLIC` no basta. Hallazgo de la revisión adversarial. |
+| 6 | Restricciones `<> 'NaN'` en todas las columnas monetarias y validación en las RPC | `NaN` pasa `>= 0` y cabe en `NUMERIC(14,2)`; dejaba ventas imposibles de cobrar. |
+| 7 | Dinero en formularios como string y sumas en centavos enteros; el total mostrado es solo orientativo | Sin floats (CLAUDE.md §15). |
+| 8 | Los diálogos (portales) van **fuera** de los `<form>` | Los eventos de un portal burbujean por el árbol de React y enviarían el formulario padre. |
+| 9 | La pantalla separa siempre venta registrada, cobrado, por verificar y por cobrar; la utilidad estimada se muestra aparte | CLAUDE.md §14. |
+| 10 | Comprobante imprimible (`window.print()` + estilos `print:`), sin PDF generado | Sin dependencias nuevas; el formato definitivo está pendiente (P6). |
+
+## Revisión adversarial con Opus (Fase 3)
+Se delegó a un subagente Opus la revisión de las RPC. Confirmó y se corrigieron (migración `…0004` y `…0005`):
+EXECUTE de `anon` sobre funciones sin control de admin, precios `NaN`, clave de idempotencia reutilizada con otros datos,
+reintento simultáneo de pagos, productos inactivos, orden de bloqueos y coherencia de estados de pagos.
+No se implementó (documentado): movimientos de inventario para reservas de iPhone (P9) y precio mínimo (P4).
+
+## Pruebas de concurrencia real
+`tests/integration/concurrency.mjs` lanza conexiones simultáneas y hace COMMIT (con prefijo `CC `, luego limpia):
+misma unidad vendida por 6 clientes → 1 gana; stock 3 con 8 ventas → 3 ganan y nunca negativo; misma clave de idempotencia ×4 → 1 venta;
+5 pagos simultáneos que excederían el total → solo caben 2; misma referencia de transferencia → 1; confirmar vs. cancelar → estado consistente.

@@ -655,7 +655,7 @@ Preséntame el plan, las decisiones pendientes y los criterios de aceptación.
 
 Espera mi aprobación antes de empezar.
 
-## 24. Comandos y estado (actualizado en Fase 2)
+## 24. Comandos y estado (actualizado en Fase 3)
 
 - `npm run dev` · `build` · `lint` · `typecheck` · `test` (Vitest) · `test:e2e` (Playwright)
 - Pruebas SQL/RLS: `npm run test:db` con `SUPABASE_DB_URL` (bloques DO que revierten todo; corren contra cualquier Postgres, también en CI).
@@ -664,3 +664,6 @@ Espera mi aprobación antes de empezar.
 - Variables: copiar `.env.example` a `.env.local`. `VITE_BASE_PATH` define la base (Pages: `/<repo>/`).
 - Enrutado: `HashRouter` (ver `docs/DECISIONS.md`). Creación del admin: `docs/ADMIN_SETUP.md`.
 - Despliegue: solo manual vía workflow `deploy.yml` (`workflow_dispatch`).
+- Concurrencia real: `SUPABASE_DB_URL=<url> node tests/integration/concurrency.mjs` (hace COMMIT de datos `CC ` y los limpia). Limpieza manual: `tests/integration/cleanup-test-data.sql`.
+- Reglas comerciales propuestas y aún no aprobadas por el negocio: `docs/PENDING_RULES.md` (revisar antes de las Fases 4 y 5).
+- Funciones nuevas: conceder `EXECUTE` solo a `authenticated` (los privilegios por defecto ya no se heredan) y exigir `assert_admin()`.

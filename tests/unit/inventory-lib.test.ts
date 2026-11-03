@@ -88,8 +88,9 @@ describe('describeDbError', () => {
     expect(describeDbError({ code: '23505', message: 'duplicate key ... product_units_imei_key' })).toMatch(/IMEI/)
     expect(describeDbError({ code: '23505', message: 'duplicate key ... product_variants_sku_key' })).toMatch(/SKU/)
     expect(describeDbError({ code: '23514', message: 'Existencias insuficientes (disponibles: 2)' })).toBe(
-      'Existencias insuficientes',
+      'Existencias insuficientes (disponibles: 2)',
     )
+    expect(describeDbError({ code: '23505', message: 'La clave de idempotencia ya se usó con otros datos' })).toMatch(/otros datos/)
     expect(describeDbError({ code: '42501' })).toMatch(/permisos/)
     expect(describeDbError(new Error('x'))).toMatch(/Intenta de nuevo/)
   })

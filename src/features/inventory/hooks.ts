@@ -1,12 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { SupabaseClient } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { useQuery } from '@tanstack/react-query'
+import { client } from '@/hooks/data'
 import * as api from './api'
 
-export function client(): SupabaseClient {
-  if (!supabase) throw new Error('Supabase no está configurado')
-  return supabase
-}
+export { client, useInvalidatingMutation } from '@/hooks/data'
 
 export const keys = {
   categories: ['categories'] as const,
@@ -31,15 +27,3 @@ export const useUnitsByProduct = (productId: string) =>
 export const useMovements = () => useQuery({ queryKey: keys.movements, queryFn: () => api.listMovements(client()) })
 export const useImages = (productId: string) =>
   useQuery({ queryKey: keys.images(productId), queryFn: () => api.listImages(client(), productId) })
-
-/** Mutación que invalida las consultas indicadas al terminar con éxito. */
-export function useInvalidatingMutation<TVars, TData>(
-  fn: (vars: TVars) => Promise<TData>,
-  invalidate: readonly (readonly unknown[])[],
-) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: fn,
-    onSuccess: () => Promise.all(invalidate.map((queryKey) => qc.invalidateQueries({ queryKey }))),
-  })
-}
