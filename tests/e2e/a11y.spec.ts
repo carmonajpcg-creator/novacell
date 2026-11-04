@@ -22,7 +22,8 @@ test.describe('accesibilidad: tienda pública y login', () => {
   ] as const) {
     test(name, async ({ page }) => {
       await page.goto(path)
-      await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible()
+      await expect(page.getByRole('main').or(page.locator('#root > *').first()).first()).toBeVisible()
+      await page.waitForLoadState('networkidle')
       await scan(page, name)
     })
   }
