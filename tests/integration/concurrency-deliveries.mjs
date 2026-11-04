@@ -97,6 +97,10 @@ async function newDelivery(sale, tag) {
 
 async function main() {
   console.log(`Corrida ${run}: preparando datos…`)
+  // Protección: estas pruebas hacen COMMIT y luego borran por prefijo. Nunca contra producción.
+  if ((await scalar("select count(*) as v from public.business_settings where key = 'environment' and value = '\"production\"'::jsonb")) !== '0') {
+    throw new Error('La base está marcada como producción (business_settings.environment): no se ejecutan pruebas de concurrencia.')
+  }
   const s = await query(setup)
   if (!s.ok) throw new Error(`Setup falló: ${s.out.slice(0, 400)}`)
 

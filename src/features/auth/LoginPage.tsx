@@ -40,7 +40,7 @@ export function LoginPage() {
       <Card className="w-full max-w-sm space-y-6">
         <div className="space-y-1 text-center">
           <Wordmark className="text-2xl" />
-          <p className="text-sm text-subtle">Acceso administrativo</p>
+          <h1 className="text-sm text-subtle">Acceso administrativo</h1>
         </div>
 
         {!isSupabaseConfigured && (

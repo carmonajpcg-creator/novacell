@@ -6,7 +6,7 @@
   --color-graphite: #15171b;
   --color-surface: #ffffff;
   --color-muted: #f2f3f5;
-  --color-subtle: #667085;
+  --color-subtle: #5a6475; /* gris medio oscurecido para cumplir contraste AA sobre gris claro */
   --color-brand: #3563e9;
   --color-brand-hover: #2a50c4;
   --color-danger: #b42318;

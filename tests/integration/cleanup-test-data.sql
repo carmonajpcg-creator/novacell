@@ -3,6 +3,10 @@
 do $$
 declare pids uuid[]; uids uuid[]; vids uuid[]; cids uuid[]; sids uuid[]; crids uuid[]; laids uuid[];
 begin
+  -- Protección: nunca limpiar una base marcada como producción (insert into business_settings (key, value) values ('environment', '"production"')).
+  if exists (select 1 from public.business_settings where key = 'environment' and value = '"production"'::jsonb) then
+    raise exception 'Base marcada como produccion: la limpieza de datos de prueba esta deshabilitada';
+  end if;
   select coalesce(array_agg(id), '{}') into pids from public.products where name like 'E2E %' or name like 'CC %';
   select coalesce(array_agg(id), '{}') into uids from public.product_units where product_id = any(pids);
   select coalesce(array_agg(id), '{}') into vids from public.product_variants where product_id = any(pids);

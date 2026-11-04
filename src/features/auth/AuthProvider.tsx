@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { fetchRole, signInWithPassword, signOut as apiSignOut, type UserRole } from './api'
 import { AuthContext, type AuthState } from './AuthContext'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient()
   const [status, setStatus] = useState<AuthState['status']>(supabase ? 'loading' : 'anonymous')
   const [session, setSession] = useState<Session | null>(null)
   const [role, setRole] = useState<UserRole | null>(null)
@@ -18,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (cancelled) return
       setSession(next)
       if (!next) {
+        queryClient.clear()
         setRole(null)
         setStatus('anonymous')
         return
@@ -41,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true
       sub.subscription.unsubscribe()
     }
-  }, [])
+  }, [queryClient])
 
   const signIn = useCallback(async (email: string, password: string) => {
     if (!supabase) throw new Error('Supabase no está configurado')
@@ -50,7 +53,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     if (supabase) await apiSignOut(supabase)
-  }, [])
+    // Los datos privados no deben quedar en memoria de la pestaña tras cerrar sesión.
+    queryClient.clear()
+  }, [queryClient])
 
   const value = useMemo<AuthState>(
     () => ({

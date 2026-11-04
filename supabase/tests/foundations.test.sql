@@ -55,9 +55,9 @@ begin
   report := report || case when c then 'ok   ' else 'FAIL ' end || 'admin ve toda la configuracion' || E'\n'; fails := fails + (not c)::int;
   begin
     insert into public.audit_logs (actor_id, action, entity) values (admin_id, 'test', 'test');
-    c := true;
-  exception when others then c := false; end;
-  report := report || case when c then 'ok   ' else 'FAIL ' end || 'admin puede registrar auditoria' || E'\n'; fails := fails + (not c)::int;
+    c := false;
+  exception when insufficient_privilege then c := true; end;
+  report := report || case when c then 'ok   ' else 'FAIL ' end || 'ni el admin escribe la auditoria a mano (solo el sistema)' || E'\n'; fails := fails + (not c)::int;
   begin delete from public.audit_logs; c := false; exception when insufficient_privilege then c := true; end;
   report := report || case when c then 'ok   ' else 'FAIL ' end || 'la auditoria no se puede borrar' || E'\n'; fails := fails + (not c)::int;
   reset role;

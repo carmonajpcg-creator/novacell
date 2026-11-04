@@ -173,7 +173,7 @@ function Metric({
     </Card>
   )
   return to ? (
-    <Link to={to} className="block rounded-card transition-shadow hover:shadow-md" aria-label={`${label}: ${value}`}>
+    <Link to={to} className="block rounded-card transition-shadow hover:shadow-md">
       {body}
     </Link>
   ) : (
