@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { useQueryClient } from '@tanstack/react-query'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { needsMfaChallenge } from './mfa'
 import { fetchRole, signInWithPassword, signOut as apiSignOut, type UserRole } from './api'
 import { AuthContext, type AuthState } from './AuthContext'
 
@@ -29,7 +30,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const r = await fetchRole(client, next.user.id)
         if (cancelled) return
         setRole(r)
-        setStatus('authenticated')
+        // Con un segundo factor registrado, la sesión de solo contraseña (aal1) debe pasar el código antes de entrar.
+        const challenge = await needsMfaChallenge(client)
+        if (cancelled) return
+        setStatus(challenge ? 'mfa_required' : 'authenticated')
       } catch {
         if (!cancelled) setStatus('error')
       }
@@ -37,6 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     void client.auth.getSession().then(({ data }) => apply(data.session))
     const { data: sub } = client.auth.onAuthStateChange((_event, next) => {
+      // Sesión nueva: mostrar "cargando" de inmediato (no "anónimo") para que el guard no redirija al login mientras se verifica el rol.
+      if (next)
+        setStatus((prev) =>
+          prev === 'authenticated' || prev === 'mfa_required' ? prev : 'loading',
+        )
       // Diferido para no bloquear el cliente de Auth con llamadas dentro del callback.
       setTimeout(() => void apply(next), 0)
     })

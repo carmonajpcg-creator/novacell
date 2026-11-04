@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react'
 import type { UserRole } from './api'
 
 export interface AuthState {
-  status: 'loading' | 'anonymous' | 'authenticated' | 'error'
+  status: 'loading' | 'anonymous' | 'mfa_required' | 'authenticated' | 'error'
   role: UserRole | null
   email: string | null
   isAdmin: boolean

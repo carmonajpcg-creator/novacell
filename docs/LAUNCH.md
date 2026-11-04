@@ -12,7 +12,7 @@ Estado de cada punto: **Hecho** (verificado en el repo), **Tuyo** (requiere tu c
 | CSP en el build (`script-src 'self'`, `connect-src` solo Supabase) y `referrer: no-referrer` | Hecho (vite.config.ts) |
 | Caché de datos privados se borra al cerrar sesión | Hecho |
 | CI con permisos mínimos y CLI de Supabase fijado | Hecho |
-| **MFA (TOTP) para el administrador** y exigir `aal2` en `is_admin()` | **Abierto**: requiere una pantalla de alta del segundo factor; si se exige en la base sin ella, el admin queda fuera. Recomendado antes de abrir al público. |
+| Verificación en dos pasos (TOTP): pantalla de alta en Configuración → Seguridad, paso de código al iniciar sesión, e interruptor en la base (`set_require_mfa`, solo desde una sesión aal2 y con un factor verificado; `is_admin()` exige aal2 cuando está encendido) | **Hecho el código; falta activarlo TÚ**: entrar a Configuración → Seguridad, escanear el QR con tu app y pulsar «Exigir verificación en dos pasos». Yo no puedo hacerlo porque requiere tu teléfono. |
 | Contraseña del admin de 12+ caracteres, protección contra contraseñas filtradas, límites de intentos, registro de usuarios desactivado, URLs de redirección | **Tuyo** (panel de Supabase → Authentication). No verificable desde el código. |
 | `max_rows` en 100–200 (panel de Supabase → API) | **Tuyo** |
 | Clickjacking: GitHub Pages no permite `X-Frame-Options`; se resuelve al pasar a dominio propio con CDN/proxy | Abierto (aceptado para la etapa inicial) |

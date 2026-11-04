@@ -55,6 +55,24 @@ describe('RequireAdmin', () => {
   })
 })
 
+describe('RequireAdmin con segundo factor', () => {
+  it('pide el código y NO muestra el panel mientras falte el segundo factor', () => {
+    renderAt('/admin', auth({ status: 'mfa_required', role: 'admin', isAdmin: true }))
+    expect(screen.getByRole('heading', { name: 'Verificación en dos pasos' })).toBeInTheDocument()
+    expect(screen.getByLabelText(/Código de tu app/)).toBeInTheDocument()
+    expect(screen.queryByText('panel privado')).not.toBeInTheDocument()
+  })
+  it('solo acepta dígitos en el código y permite cerrar sesión', async () => {
+    const signOut = vi.fn()
+    renderAt('/admin', auth({ status: 'mfa_required', role: 'admin', isAdmin: true, signOut }))
+    const input = screen.getByLabelText(/Código de tu app/)
+    await userEvent.type(input, '12ab34')
+    expect(input).toHaveValue('1234')
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
+    expect(signOut).toHaveBeenCalled()
+  })
+})
+
 describe('LoginPage', () => {
   it('valida los campos antes de enviar', async () => {
     const signIn = vi.fn()

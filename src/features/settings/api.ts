@@ -1,6 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-export const PUBLIC_KEYS = ['business_name', 'whatsapp_number', 'business_hours', 'business_address', 'delivery_info'] as const
+export const PUBLIC_KEYS = [
+  'business_name',
+  'whatsapp_number',
+  'business_hours',
+  'business_address',
+  'delivery_info',
+] as const
 export type PublicKey = (typeof PUBLIC_KEYS)[number]
 export const RULE_KEYS = ['layaway_min_down_percent', 'credit_allowed_frequencies'] as const
 
@@ -34,12 +40,19 @@ export async function loadSettings(c: SupabaseClient): Promise<SettingsMap> {
 }
 
 /** Guarda un ajuste; un valor vacío (null) elimina la fila. Los datos del negocio son públicos; las reglas, privadas. */
-export async function saveSetting(c: SupabaseClient, key: string, value: unknown, isPublic: boolean) {
+export async function saveSetting(
+  c: SupabaseClient,
+  key: string,
+  value: unknown,
+  isPublic: boolean,
+) {
   if (value === null) {
     const { error } = await c.from('business_settings').delete().eq('key', key)
     if (error) throw error
     return
   }
-  const { error } = await c.from('business_settings').upsert({ key, value, is_public: isPublic }, { onConflict: 'key' })
+  const { error } = await c
+    .from('business_settings')
+    .upsert({ key, value, is_public: isPublic }, { onConflict: 'key' })
   if (error) throw error
 }

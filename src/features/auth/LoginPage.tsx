@@ -23,7 +23,8 @@ export function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<LoginValues>({ resolver: zodResolver(loginSchema) })
 
-  if (status === 'authenticated' && isAdmin) return <Navigate to="/admin" replace />
+  if ((status === 'authenticated' && isAdmin) || status === 'mfa_required')
+    return <Navigate to="/admin" replace />
 
   async function onSubmit(values: LoginValues) {
     setError(null)

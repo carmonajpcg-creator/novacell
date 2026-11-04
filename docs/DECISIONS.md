@@ -167,3 +167,10 @@ SQL: 385 comprobaciones en total (entregas, edición por RPC, permisos, reportes
 - **Accesibilidad:** pruebas axe (WCAG A/AA) en tienda, login y 13 pantallas del panel (`tests/e2e/a11y.spec.ts`). Corregido: contraste de `text-subtle` (el gris medio pasó de `#667085` a `#5a6475` porque no alcanzaba 4.5:1 sobre el gris claro), el login sin `<h1>` y etiquetas ARIA que no coincidían con el texto visible. La prueba se hizo con la base casi vacía: conviene repetirla con datos reales y una revisión manual con lector de pantalla.
 - **Pruebas:** SQL 394, unitarias 111 (timeout subido a 20 s por intermitencia bajo carga), E2E completo 25 ok / 11 omitidos por diseño / 0 fallas, concurrencia de entregas ok.
 - `npm audit`: 0 vulnerabilidades en dependencias de producción; 11 moderadas en herramientas de desarrollo (minimatch), no se publican.
+
+## MFA del administrador (2026-11-04)
+- TOTP con Supabase Auth. El interruptor `require_mfa` (business_settings) solo cambia con `set_require_mfa()`: exige sesión aal2 y un factor verificado, y un trigger bloquea INSERT/UPDATE/DELETE directos; así es imposible dejarse fuera por accidente. Con el interruptor encendido, `is_admin()` exige `aal2`, de modo que una contraseña robada no opera el panel ni la base. Apagado, todo funciona como antes.
+- Al iniciar sesión con un factor registrado, el panel pide el código (estado `mfa_required`); no se muestra nada privado antes.
+- Recuperación: si se pierde el dispositivo, hay que quitar el factor desde el panel de Supabase (Authentication → Users) con acceso al proyecto, y apagar el interruptor con SQL como propietario. Guarda la clave manual que muestra el QR.
+- Corregido de paso: carrera entre el login y la navegación (el guard mandaba un instante al login) y contraste de las insignias azules (4.1:1 → ≥4.5:1).
+- Pruebas: SQL 412, unitarias 113. El flujo de alta del TOTP no tiene E2E automático (requiere generar códigos de un teléfono); se prueba a mano al activarlo.

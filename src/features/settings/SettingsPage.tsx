@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { client } from '@/hooks/data'
 import { describeDbError } from '@/lib/dbErrors'
+import { SecuritySection } from './SecuritySection'
 import { loadSettings, PUBLIC_KEYS, saveSetting, type SettingsMap } from './api'
 
 const optionalText = (max: number) => z.string().trim().max(max, `Máximo ${max} caracteres`)
@@ -20,14 +21,20 @@ export const settingsSchema = z.object({
   whatsapp_number: z
     .string()
     .trim()
-    .refine((v) => v === '' || /^\d{10}$/.test(v.replace(/[\s\-().]/g, '')), 'Ingresa 10 dígitos (sin lada internacional)'),
+    .refine(
+      (v) => v === '' || /^\d{10}$/.test(v.replace(/[\s\-().]/g, '')),
+      'Ingresa 10 dígitos (sin lada internacional)',
+    ),
   business_hours: optionalText(600),
   business_address: optionalText(600),
   delivery_info: optionalText(600),
   layaway_min_down_percent: z
     .string()
     .trim()
-    .refine((v) => v === '' || (/^\d{1,3}(\.\d{1,2})?$/.test(v) && Number(v) <= 100), 'Debe ser un porcentaje de 0 a 100'),
+    .refine(
+      (v) => v === '' || (/^\d{1,3}(\.\d{1,2})?$/.test(v) && Number(v) <= 100),
+      'Debe ser un porcentaje de 0 a 100',
+    ),
   freq_weekly: z.boolean(),
   freq_biweekly: z.boolean(),
   freq_monthly: z.boolean(),
@@ -44,7 +51,8 @@ function toForm(s: SettingsMap): SettingsValues {
     business_hours: s.business_hours ?? '',
     business_address: s.business_address ?? '',
     delivery_info: s.delivery_info ?? '',
-    layaway_min_down_percent: s.layaway_min_down_percent === undefined ? '' : String(s.layaway_min_down_percent),
+    layaway_min_down_percent:
+      s.layaway_min_down_percent === undefined ? '' : String(s.layaway_min_down_percent),
     freq_weekly: freqs.includes('weekly'),
     freq_biweekly: freqs.includes('biweekly'),
     freq_monthly: freqs.includes('monthly'),
@@ -54,7 +62,13 @@ function toForm(s: SettingsMap): SettingsValues {
 export function SettingsPage() {
   const query = useQuery({ queryKey: ['settings'], queryFn: () => loadSettings(client()) })
   if (query.isPending) return <LoadingState label="Cargando configuración…" />
-  if (query.isError) return <ErrorState message="No se pudo cargar la configuración." onRetry={() => void query.refetch()} />
+  if (query.isError)
+    return (
+      <ErrorState
+        message="No se pudo cargar la configuración."
+        onRetry={() => void query.refetch()}
+      />
+    )
   return <SettingsForm initial={toForm(query.data)} />
 }
 
@@ -85,7 +99,12 @@ function SettingsForm({ initial }: { initial: SettingsValues }) {
       }
       const pct = v.layaway_min_down_percent.trim()
       await saveSetting(c, 'layaway_min_down_percent', pct === '' ? null : Number(pct), false)
-      await saveSetting(c, 'credit_allowed_frequencies', freqs.length === ALL_FREQUENCIES.length ? null : freqs, false)
+      await saveSetting(
+        c,
+        'credit_allowed_frequencies',
+        freqs.length === ALL_FREQUENCIES.length ? null : freqs,
+        false,
+      )
       await qc.invalidateQueries({ queryKey: ['settings'] })
       await qc.invalidateQueries({ queryKey: ['public-business-info'] })
       setSaved(true)
@@ -95,66 +114,90 @@ function SettingsForm({ initial }: { initial: SettingsValues }) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-      <h1 className="text-2xl font-semibold tracking-tight">Configuración</h1>
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        <h1 className="text-2xl font-semibold tracking-tight">Configuración</h1>
 
-      <Card className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold">Datos del negocio (públicos)</h2>
-          <p className="text-sm text-subtle">
-            Se muestran en la tienda. Déjalos vacíos si aún no están definidos: no se inventan tarifas, zonas ni horarios.
+        <Card className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold">Datos del negocio (públicos)</h2>
+            <p className="text-sm text-subtle">
+              Se muestran en la tienda. Déjalos vacíos si aún no están definidos: no se inventan
+              tarifas, zonas ni horarios.
+            </p>
+          </div>
+          <Field id="s-name" label="Nombre del negocio" error={errors.business_name?.message}>
+            <Input id="s-name" {...register('business_name')} />
+          </Field>
+          <Field
+            id="s-wa"
+            label="WhatsApp del negocio"
+            error={errors.whatsapp_number?.message}
+            hint="10 dígitos. A él llegan los pedidos del carrito."
+          >
+            <Input id="s-wa" inputMode="tel" {...register('whatsapp_number')} />
+          </Field>
+          <Field id="s-hours" label="Horario de atención" error={errors.business_hours?.message}>
+            <Textarea id="s-hours" {...register('business_hours')} />
+          </Field>
+          <Field id="s-address" label="Ubicación" error={errors.business_address?.message}>
+            <Textarea id="s-address" {...register('business_address')} />
+          </Field>
+          <Field
+            id="s-delivery"
+            label="Información de entregas"
+            error={errors.delivery_info?.message}
+            hint="Texto libre. No se muestran tarifas ni zonas si no las escribes tú."
+          >
+            <Textarea id="s-delivery" {...register('delivery_info')} />
+          </Field>
+        </Card>
+
+        <Card className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold">Reglas comerciales (privadas)</h2>
+            <p className="text-sm text-subtle">
+              Ajustes que usan los apartados y los créditos. Las políticas definitivas están
+              pendientes de aprobación.
+            </p>
+          </div>
+          <Field
+            id="s-minpct"
+            label="Anticipo mínimo de un apartado (%)"
+            error={errors.layaway_min_down_percent?.message}
+            hint="Vacío: solo se exige que el anticipo sea mayor a cero."
+          >
+            <Input id="s-minpct" inputMode="decimal" {...register('layaway_min_down_percent')} />
+          </Field>
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium">
+              Frecuencias de pago habilitadas para créditos
+            </legend>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" className="size-4" {...register('freq_weekly')} /> Semanal
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" className="size-4" {...register('freq_biweekly')} /> Quincenal
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" className="size-4" {...register('freq_monthly')} /> Mensual
+            </label>
+          </fieldset>
+        </Card>
+
+        <FormError message={error} />
+        {saved && (
+          <p role="status" className="text-sm text-success">
+            Configuración guardada
           </p>
+        )}
+        <div className="flex justify-end">
+          <Button type="submit" size="lg" disabled={isSubmitting}>
+            {isSubmitting ? 'Guardando…' : 'Guardar configuración'}
+          </Button>
         </div>
-        <Field id="s-name" label="Nombre del negocio" error={errors.business_name?.message}>
-          <Input id="s-name" {...register('business_name')} />
-        </Field>
-        <Field id="s-wa" label="WhatsApp del negocio" error={errors.whatsapp_number?.message} hint="10 dígitos. A él llegan los pedidos del carrito.">
-          <Input id="s-wa" inputMode="tel" {...register('whatsapp_number')} />
-        </Field>
-        <Field id="s-hours" label="Horario de atención" error={errors.business_hours?.message}>
-          <Textarea id="s-hours" {...register('business_hours')} />
-        </Field>
-        <Field id="s-address" label="Ubicación" error={errors.business_address?.message}>
-          <Textarea id="s-address" {...register('business_address')} />
-        </Field>
-        <Field id="s-delivery" label="Información de entregas" error={errors.delivery_info?.message} hint="Texto libre. No se muestran tarifas ni zonas si no las escribes tú.">
-          <Textarea id="s-delivery" {...register('delivery_info')} />
-        </Field>
-      </Card>
-
-      <Card className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold">Reglas comerciales (privadas)</h2>
-          <p className="text-sm text-subtle">Ajustes que usan los apartados y los créditos. Las políticas definitivas están pendientes de aprobación.</p>
-        </div>
-        <Field id="s-minpct" label="Anticipo mínimo de un apartado (%)" error={errors.layaway_min_down_percent?.message} hint="Vacío: solo se exige que el anticipo sea mayor a cero.">
-          <Input id="s-minpct" inputMode="decimal" {...register('layaway_min_down_percent')} />
-        </Field>
-        <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">Frecuencias de pago habilitadas para créditos</legend>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" className="size-4" {...register('freq_weekly')} /> Semanal
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" className="size-4" {...register('freq_biweekly')} /> Quincenal
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" className="size-4" {...register('freq_monthly')} /> Mensual
-          </label>
-        </fieldset>
-      </Card>
-
-      <FormError message={error} />
-      {saved && (
-        <p role="status" className="text-sm text-success">
-          Configuración guardada
-        </p>
-      )}
-      <div className="flex justify-end">
-        <Button type="submit" size="lg" disabled={isSubmitting}>
-          {isSubmitting ? 'Guardando…' : 'Guardar configuración'}
-        </Button>
-      </div>
-    </form>
+      </form>
+      <SecuritySection />
+    </div>
   )
 }
