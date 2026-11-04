@@ -8,6 +8,6 @@ Ver CLAUDE.md §20 para el detalle de cada fase.
 - [x] Fase 4 — Créditos (reglas C1 a C12 pendientes de aprobación: docs/PENDING_RULES.md)
 - [x] Fase 5 — Apartados y cobranza (reglas L1-L10 y B1-B6 pendientes de aprobación: docs/PENDING_RULES.md)
 - [x] Fase 6 — Tienda pública (reglas S1-S9 pendientes de aprobación: docs/PENDING_RULES.md)
-- [ ] Fase 7 — Entregas y reportes
+- [x] Fase 7 — Entregas y reportes (reglas D1-D8, R1-R9 pendientes de aprobación: docs/PENDING_RULES.md)
 - [ ] Fase 8 — Lanzamiento
 

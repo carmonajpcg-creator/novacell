@@ -11,6 +11,9 @@ begin
 
   select coalesce(array_agg(id), '{}') into crids from public.credits where sale_id = any(sids);
   select coalesce(array_agg(id), '{}') into laids from public.layaways where sale_id = any(sids);
+  delete from public.audit_logs where entity = 'deliveries'
+    and entity_id in (select id from public.deliveries where sale_id = any(sids));
+  delete from public.deliveries where sale_id = any(sids);
   delete from public.collection_reminders where customer_id = any(cids);
   delete from public.layaways where id = any(laids);
   delete from public.payment_allocations where payment_id in (select id from public.payments where sale_id = any(sids));

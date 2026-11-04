@@ -6,15 +6,18 @@ import { LoginPage, RequireAdmin } from '@/features/auth'
 import { CreditDetailPage, CreditsPage, CreditStatementPage, NewCreditPage, PaymentReceiptPage, PaymentsPage } from '@/features/credits'
 import { CartPage, CatalogPage, ContactPage, ProductPage, StoreHomePage } from '@/features/catalog'
 import { CollectionsPage } from '@/features/collections'
+import { DashboardPage } from '@/features/dashboard'
 import { CustomerDetailPage, CustomersPage } from '@/features/customers'
+import { DeliveriesPage, DeliveryDetailPage } from '@/features/deliveries'
 import { InventoryPage, ProductDetailPage, ProductsPage } from '@/features/inventory'
 import { LayawayDetailPage, LayawaysPage, NewLayawayPage } from '@/features/layaways'
 import { NewSalePage, ReceiptPage, SaleDetailPage, SalesPage } from '@/features/sales'
+import { ReportsPage } from '@/features/reports'
 import { SettingsPage } from '@/features/settings'
 import { AdminSectionPage, NotFoundPage } from './pages'
 
 /** Secciones ya implementadas; el resto muestra un marcador "en construcción". */
-const implemented = new Set(['/admin/productos', '/admin/inventario', '/admin/clientes', '/admin/ventas', '/admin/creditos', '/admin/abonos', '/admin/apartados', '/admin/cobranza', '/admin/configuracion'])
+const implemented = new Set(['/admin/productos', '/admin/inventario', '/admin/clientes', '/admin/ventas', '/admin/creditos', '/admin/abonos', '/admin/apartados', '/admin/cobranza', '/admin/configuracion', '/admin/entregas', '/admin/reportes', '/admin'])
 
 export function AppRoutes() {
   return (
@@ -30,6 +33,10 @@ export function AppRoutes() {
       <Route path="/admin/login" element={<LoginPage />} />
       <Route path="/admin" element={<RequireAdmin />}>
         <Route element={<AdminLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="entregas" element={<DeliveriesPage />} />
+          <Route path="entregas/:id" element={<DeliveryDetailPage />} />
+          <Route path="reportes" element={<ReportsPage />} />
           <Route path="productos" element={<ProductsPage />} />
           <Route path="productos/:id" element={<ProductDetailPage />} />
           <Route path="inventario" element={<InventoryPage />} />

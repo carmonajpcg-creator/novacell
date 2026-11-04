@@ -655,7 +655,7 @@ Preséntame el plan, las decisiones pendientes y los criterios de aceptación.
 
 Espera mi aprobación antes de empezar.
 
-## 24. Comandos y estado (actualizado en Fase 6)
+## 24. Comandos y estado (actualizado en Fase 7)
 
 - `npm run dev` · `build` · `lint` · `typecheck` · `test` (Vitest) · `test:e2e` (Playwright)
 - Pruebas SQL/RLS: `npm run test:db` con `SUPABASE_DB_URL` (bloques DO que revierten todo; corren contra cualquier Postgres, también en CI).
@@ -671,3 +671,4 @@ Espera mi aprobación antes de empezar.
 - Pendiente en el panel de Supabase: fijar `max_rows` en 100–200 (no verificable desde el código).
 - Funciones nuevas: conceder `EXECUTE` solo a `authenticated` (los privilegios por defecto ya no se heredan) y exigir `assert_admin()`.
 - E2E de cobranza: además de las variables habituales requiere `E2E_DB_URL` (Postgres de desarrollo) para simular una cuota vencida.
+- Entregas y reportes (Fase 7): toda escritura de `deliveries` es por RPC (`create_delivery`, `set_delivery_status`, `update_delivery`); no hay UPDATE directo. Las métricas del dashboard y de los reportes salen de `dashboard_metrics()` / `report_*` (nunca se recalculan en el navegador). Concurrencia: `SUPABASE_DB_URL=<url> node tests/integration/concurrency-deliveries.mjs`. Reglas D1-D8 y R1-R9 propuestas y aún no aprobadas: `docs/PENDING_RULES.md`.

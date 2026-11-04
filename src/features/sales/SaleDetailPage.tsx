@@ -13,6 +13,8 @@ import { formatCents } from '@/lib/money'
 import * as api from './api'
 import { useCreditBySale } from '@/features/credits/hooks'
 import { useLayawayBySale } from '@/features/layaways/hooks'
+import { DeliveryFormDialog } from '@/features/deliveries/components/DeliveryFormDialog'
+import { useActiveDeliveryBySale } from '@/features/deliveries/hooks'
 import { PaymentDialog } from './components/PaymentDialog'
 import { ReasonDialog } from './components/ReasonDialog'
 import { PaymentStatusBadge, SaleStatusBadge } from './components/SaleStatusBadge'
@@ -30,6 +32,8 @@ export function SaleDetailPage() {
   const payments = usePayments(id)
   const credit = useCreditBySale(id)
   const layaway = useLayawayBySale(id)
+  const delivery = useActiveDeliveryBySale(id)
+  const [showDelivery, setShowDelivery] = useState(false)
   const [showPayment, setShowPayment] = useState(false)
   const [reasoned, setReasoned] = useState<Reasoned>(null)
   const [error, setError] = useState<string | null>(null)
@@ -95,6 +99,16 @@ export function SaleDetailPage() {
                 <Link to={`/admin/ventas/${s.id}/comprobante`}>
                   <Printer className="size-4" aria-hidden /> Comprobante
                 </Link>
+              </Button>
+            )}
+            {s.status === 'confirmed' && delivery.data && (
+              <Button asChild variant="secondary">
+                <Link to={`/admin/entregas/${delivery.data.id}`}>Ver entrega {delivery.data.delivery_number}</Link>
+              </Button>
+            )}
+            {s.status === 'confirmed' && delivery.isSuccess && !delivery.data && (
+              <Button variant="secondary" onClick={() => setShowDelivery(true)}>
+                Programar entrega
               </Button>
             )}
             {isPending && remaining > 0 && <Button onClick={() => setShowPayment(true)}>Registrar pago</Button>}
@@ -225,6 +239,7 @@ export function SaleDetailPage() {
         )}
       </section>
 
+      <DeliveryFormDialog open={showDelivery} onOpenChange={setShowDelivery} presetSaleId={id} onCreated={() => setShowDelivery(false)} />
       <PaymentDialog open={showPayment} onOpenChange={setShowPayment} saleId={id} remainingCents={Math.max(remaining, 0)} />
 
       <ReasonDialog

@@ -78,3 +78,30 @@ Cada una indica dónde está implementada para poder ajustarla.
 | S7 | Los datos de contacto, horario, dirección y entregas son **configurables** (Configuración) y públicos. Si faltan, la tienda lo indica. **No se inventan tarifas, zonas de cobertura ni tiempos de entrega.** | `business_settings` | Pendiente (datos reales del negocio) |
 | S8 | El carrito vive solo en el navegador del visitante; no se recopilan datos personales ni se guarda el pedido en el servidor. | Interfaz | Pendiente |
 | S9 | No se publican garantías, devoluciones, financiamiento ni apartados hasta que existan políticas aprobadas. | Interfaz | Pendiente |
+
+## Fase 7 — Entregas (propuestas D1 a D8, pendientes de aprobación)
+
+| # | Regla propuesta | Dónde vive | Estado |
+|---|-----------------|------------|--------|
+| D1 | Una entrega solo se programa para una venta **confirmada** (cobrada por completo, crédito activo o apartado ya convertido). | `create_delivery` | Pendiente |
+| D2 | Una venta tiene **una sola entrega vigente**. Si se cancela, se puede programar otra (el historial conserva ambas). | índice único parcial | Pendiente |
+| D3 | Estados: pendiente → en preparación → en camino → entregada. Solo avanzan (se puede saltar pasos, p. ej. entrega en mostrador) y nunca retroceden. Entregada y cancelada son finales. | `set_delivery_status` | Pendiente |
+| D4 | El **costo de entrega** lo captura el administrador. **No hay tarifas ni zonas de cobertura.** Se registra aparte: **no se suma** al total de la venta, a los pagos ni a la utilidad. | `deliveries.delivery_cost` | Pendiente (¿se cobra al cliente o lo absorbe el negocio? ¿se suma a la venta?) |
+| D5 | La dirección es obligatoria y es un dato personal: solo la ve el administrador. Se conserva como historial. | `deliveries`, RLS | Pendiente (¿cuánto tiempo conservarla?) |
+| D6 | Cancelar una entrega exige motivo. La fecha de entrega la fija el servidor. | `set_delivery_status` | Pendiente |
+| D7 | No se avisa automáticamente al cliente: cualquier mensaje sería manual. | — | Pendiente |
+| D8 | La fecha programada no puede ser pasada (límite técnico: hasta un año). | `create_delivery` | Pendiente |
+
+## Fase 7 — Dashboard y reportes (propuestas R1 a R8, pendientes de aprobación)
+
+| # | Regla propuesta | Dónde vive | Estado |
+|---|-----------------|------------|--------|
+| R1 | **Venta registrada** = venta **confirmada**, en la fecha de su confirmación (contado: al cobrarse por completo; crédito: al activarse; apartado: al convertirse en venta). Las ventas pendientes, canceladas y los apartados sin entregar no cuentan. | `dashboard_metrics`, `report_*` | Pendiente |
+| R2 | **Dinero cobrado** = pagos **confirmados**, en la fecha de su confirmación. No cuentan los pendientes de verificar, rechazados ni revertidos. Se desglosa por método. | `dashboard_metrics`, `report_*` | Pendiente |
+| R3 | **Utilidad estimada** = total de la venta − costo histórico de sus líneas, por venta confirmada. **No es dinero cobrado**: un crédito registra su utilidad completa aunque se cobre por abonos. No descuenta costos de entrega, comisiones ni gastos. | `dashboard_metrics`, `report_sales` | Pendiente |
+| R4 | **Cuentas por cobrar** = saldo de créditos activos + saldo de apartados vigentes. No incluye ventas de contado pendientes ni créditos que esperan enganche. | `dashboard_metrics` | Pendiente |
+| R5 | **Saldo vencido** = cuotas vencidas con saldo + saldo de apartados con fecha límite vencida (hora de Ciudad de México, sin días de gracia). | `dashboard_metrics` | Pendiente |
+| R6 | **Productos disponibles** = iPhone disponibles (unidades) y accesorios con existencias, solo de productos **activos** (un producto desactivado no cuenta como disponible). | `dashboard_metrics` | Pendiente |
+| R7 | «Hoy» y «mes» son día y mes calendario en hora de Ciudad de México. Los reportes admiten rangos de hasta 366 días (inicio y fin incluidos). | todo el módulo | Pendiente |
+| R9 | **Reversos**: un pago confirmado que luego se revierte deja de contar como cobrado en su fecha original (el pasado se corrige), y el reverso se informa aparte, en la fecha en que ocurrió (dashboard: hoy y mes; reportes: total y listado con motivo). | `dashboard_metrics`, `report_summary`, `report_reversals` | Pendiente |
+| R8 | La exportación CSV contiene lo que muestra el reporte (nombre del cliente, sin teléfonos ni direcciones) y neutraliza celdas que un programa de hojas de cálculo podría interpretar como fórmulas. | Interfaz | Pendiente |
