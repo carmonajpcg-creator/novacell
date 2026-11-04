@@ -32,9 +32,11 @@ Antes de cargar datos reales:
 - Las migraciones versionadas (`supabase/migrations`) reconstruyen el esquema completo; los datos solo se recuperan con respaldo.
 
 ## 4. Publicación en GitHub Pages
-- Workflow manual `deploy.yml` (`workflow_dispatch`), construye con `VITE_BASE_PATH=/<repo>/` y las variables `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (públicas) del repositorio.
-- Pendiente de **tu autorización explícita** (CLAUDE.md §15). Requisitos: repositorio con Pages habilitado (un repo privado exige un plan que lo permita; si no, hacerlo público expone solo código, nunca claves secretas), variables configuradas en Settings → Variables, y en Supabase → Authentication → URL Configuration el sitio publicado.
-- Navegación: `HashRouter`; enlaces profundos y recargas probados en E2E sobre el build.
+- **PUBLICADO el 2026-11-04** (autorizado por el propietario): https://carmonajpcg-creator.github.io/novacell/
+- El repositorio se hizo **público** (requisito de Pages en el plan gratuito); antes se revisó que el historial no contiene contraseñas, tokens ni claves secretas.
+- Despliegue manual: Actions → «Deploy to GitHub Pages» → Run workflow (o `gh workflow run deploy.yml`). Usa las variables públicas `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` del repositorio.
+- Verificado en el sitio publicado: carga, enlace profundo + recarga, `/admin` redirige al login y sin errores de consola con la CSP activa.
+- Navegación: `HashRouter`. Dominio propio: ajustar `VITE_BASE_PATH=/` y el workflow.
 
 ## 5. Legal y datos del negocio (CLAUDE.md §17, §21)
 Sin definir por el negocio (no se inventaron): datos fiscales, garantías, devoluciones de ventas confirmadas, retención de anticipos, aviso de privacidad, tarifas y zonas de entrega, precios y catálogo reales. Revisar obligaciones legales, fiscales y de privacidad antes de abrir.
